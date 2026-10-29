@@ -25,15 +25,16 @@ state manager. Everything is client-side; the only network request is Google Fon
 
 **Done and verified**
 
-- `npm run build` passes (tsc `--noEmit` + Vite) with no warnings.
+- `npm run build` passes (tsc `--noEmit` + Vite), including from a fresh clone of the repo.
 - Ask screen: live search, hero answer, ambiguity list, recents, saved people, editorial empty
   state.
 - 46 relations, 85 distinct paths, 4 generations, both sides, in-laws, cousins, nephews/nieces.
 - Path parser handles possessives (“my mother’s younger brother”), “X of my Y”, age words,
   sibling ambiguity, Vietnamese tokens, and gives up gracefully on four-way words (uncle/aunt).
 - Tree, Learn (tones + phrases, speech synthesis), detail sheet with drag-to-dismiss.
-- PWA: manifest, icons (SVG + 512 PNG + 180 apple-touch), service worker, standalone display,
-  safe-area insets, no-zoom input.
+- PWA: manifest, icons (SVG + 192 PNG for the Apple touch icon), service worker, standalone
+  display, safe-area insets, no-zoom input.
+- Engine checks: 14 parse cases pass, no duplicate ids, no path collisions.
 
 **Known gaps / deliberate omissions**
 
@@ -50,7 +51,7 @@ state manager. Everything is client-side; the only network request is Google Fon
 ## 3. Design system (locked — keep it consistent)
 
 **Direction:** *Soft structuralism*, warm paper instead of white, forest instead of black, lime as
-he single accent. Editorial serif for the Vietnamese words, grotesk for the interface. The app
+the single accent. Editorial serif for the Vietnamese words, grotesk for the interface. The app
 should feel like a printed field guide that happens to run at 120fps.
 
 **Palette** (`:root` in `src/styles.css`)
@@ -153,8 +154,9 @@ generation step → per-segment options → cartesian product (cap 48).
 - “younger brother of my mother” is rewritten to “my mother’s younger brother” before splitting.
 
 `search()` returns `Hit[]` with `exact` (a real path) ranked above scored alias matches. Scores are
-cached per normalized query. Direct relations get a small path-length bonus so “brother” surfaces
-`anh`/`em` before “brother’s son”.
+cached per normalized query, field-weighted (identity 60, English 30, gloss 6, note 4) with a
+single phrase bonus, then ordered closest-relation-first among strong matches. That ordering is
+what makes “aunt” open with cô and dì rather than dượng.
 
 ---
 
@@ -189,7 +191,7 @@ npx esbuild scripts/check-kinship.ts --bundle --platform=node --format=esm \
 
 Then, in a browser at iPhone width (390×844), check:
 
-1. Type `my mother's younger brother` → **Chú**, cháu ↔ chú.
+1. Type `my mother's younger brother` → **Cậu**, cháu ↔ cậu.
 2. Type `uncle` → four readings (bác, chú, cậu, dượng), not one.
 3. Type `dad's brother` → bác + chú (age unknown).
 4. Type `my wife's mother` → Mẹ vợ, con ↔ mẹ.
