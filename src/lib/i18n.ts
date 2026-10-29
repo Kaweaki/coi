@@ -1,6 +1,16 @@
-export type Lang = 'en' | 'vi'
+export type Lang = 'en' | 'vi' | 'sv'
 
 export type Fact = { title: string; body: string }
+
+export const LANGS: { code: Lang; name: string; short: string }[] = [
+  { code: 'en', name: 'English', short: 'EN' },
+  { code: 'vi', name: 'Tiếng Việt', short: 'VI' },
+  { code: 'sv', name: 'Svenska', short: 'SV' },
+]
+
+/** The maker's mark. Same words in every language, by design. */
+export const ATTRIBUTION = 'Attributed to Harald Blimark · 2026 · Trademark'
+export const VERSION = '2.0.0'
 
 export type Copy = {
   langLabel: string
@@ -8,10 +18,6 @@ export type Copy = {
   tabAsk: string
   tabTree: string
   tabLearn: string
-
-  metaAsk: string
-  metaTree: string
-  metaLearn: string
 
   installTitle: string
   installHint: string
@@ -23,6 +29,7 @@ export type Copy = {
   askTitleTail: string
   askLede: string
   askPlaceholder: string
+  askHint: string
   askClear: string
   askStart: string
   askRecent: string
@@ -36,6 +43,7 @@ export type Copy = {
   heroThem: string
   hearIt: string
   fullPicture: string
+  namedBadge: string
   factsLabel: string
   facts: Fact[]
   chips: string[]
@@ -67,6 +75,12 @@ export type Copy = {
   detailClose: string
   detailFoot: string
 
+  nameLabel: string
+  namePlaceholder: string
+  nameSave: string
+  nameRemove: string
+  nameHint: string
+
   learnEyebrow: string
   learnTitle: string
   learnTitleEm: string
@@ -77,6 +91,15 @@ export type Copy = {
   learnRule: string
   learnRuleBody: string
   learnAudio: string
+
+  account: string
+  accountIntro: string
+  accountLanguage: string
+  accountNames: string
+  accountNoNames: string
+  accountData: string
+  accountVersion: string
+  accountClose: string
 }
 
 const EN: Copy = {
@@ -85,10 +108,6 @@ const EN: Copy = {
   tabAsk: 'Ask',
   tabTree: 'Tree',
   tabLearn: 'Learn',
-
-  metaAsk: 'xưng hô · pronouns',
-  metaTree: 'gia đình · family',
-  metaLearn: 'bài học · lessons',
 
   installTitle: 'Keep Cội on your Home Screen',
   installHint: 'Share, then Add to Home Screen',
@@ -101,6 +120,7 @@ const EN: Copy = {
   askLede:
     'Type it the way you would explain it out loud. Cội answers with the word you use for them — and the one they use for you.',
   askPlaceholder: "My mother's younger brother",
+  askHint: 'A relationship — or a name you saved.',
   askClear: 'Clear the search',
   askStart: 'Start with',
   askRecent: 'Recent',
@@ -115,6 +135,7 @@ const EN: Copy = {
   heroThem: 'They call you',
   hearIt: 'Hear it',
   fullPicture: 'Full picture',
+  namedBadge: 'your name',
   factsLabel: 'Three things worth knowing',
   facts: [
     {
@@ -165,6 +186,12 @@ const EN: Copy = {
   detailClose: 'Close',
   detailFoot: 'Cội · bảng xưng hô, not a dictionary',
 
+  nameLabel: 'Their name',
+  namePlaceholder: 'e.g. Uncle Bình',
+  nameSave: 'Save name',
+  nameRemove: 'Remove name',
+  nameHint: 'Saved on this device, and searchable.',
+
   learnEyebrow: 'Bài học · lessons',
   learnTitle: 'Six tones.',
   learnTitleEm: 'One family.',
@@ -178,6 +205,15 @@ const EN: Copy = {
     'Pick the word for the other person, and your own word is already decided: chú means you are cháu, anh means you are em. There is no neutral “I” in a family conversation — the pronoun is the relationship, spoken from both ends.',
   learnAudio:
     'Audio uses your phone’s Vietnamese voice. Add one in Settings → Accessibility → Spoken Content if it sounds like English.',
+
+  account: 'Account',
+  accountIntro: 'A small handbook for Vietnamese kinship, made to live on the Home Screen.',
+  accountLanguage: 'Language',
+  accountNames: 'Named people',
+  accountNoNames: 'No names yet. Open a relative and add theirs.',
+  accountData: 'Names are stored only on this device.',
+  accountVersion: 'Version',
+  accountClose: 'Close',
 }
 
 const VI: Copy = {
@@ -187,10 +223,6 @@ const VI: Copy = {
   tabTree: 'Cây',
   tabLearn: 'Học',
 
-  metaAsk: 'xưng hô · đại từ',
-  metaTree: 'gia đình · family',
-  metaLearn: 'bài học · lessons',
-
   installTitle: 'Đưa Cội ra Màn hình chính',
   installHint: 'Chia sẻ, rồi Thêm vào MH chính',
   installDismiss: 'Bỏ qua',
@@ -199,9 +231,9 @@ const VI: Copy = {
   askTitle: 'Người này là',
   askTitleEm: 'ai',
   askTitleTail: 'với bạn?',
-  askLede:
-    'Viết quan hệ theo cách bạn vẫn nói. Cội trả lời từ bạn gọi họ — và từ họ gọi bạn.',
+  askLede: 'Viết quan hệ theo cách bạn vẫn nói. Cội trả lời từ bạn gọi họ — và từ họ gọi bạn.',
   askPlaceholder: 'Mẹ của tôi',
+  askHint: 'Một quan hệ — hoặc tên bạn đã lưu.',
   askClear: 'Xoá tìm kiếm',
   askStart: 'Bắt đầu với',
   askRecent: 'Gần đây',
@@ -216,6 +248,7 @@ const VI: Copy = {
   heroThem: 'Họ gọi bạn',
   hearIt: 'Nghe',
   fullPicture: 'Xem đầy đủ',
+  namedBadge: 'tên bạn đặt',
   factsLabel: 'Ba điều nên biết',
   facts: [
     {
@@ -261,6 +294,12 @@ const VI: Copy = {
   detailClose: 'Đóng',
   detailFoot: 'Cội · bảng xưng hô, không phải từ điển',
 
+  nameLabel: 'Tên của họ',
+  namePlaceholder: 'ví dụ: Bác Bình',
+  nameSave: 'Lưu tên',
+  nameRemove: 'Xoá tên',
+  nameHint: 'Lưu trên thiết bị này, và tìm được.',
+
   learnEyebrow: 'Bài học · lessons',
   learnTitle: 'Sáu thanh điệu.',
   learnTitleEm: 'Một nhà.',
@@ -274,6 +313,129 @@ const VI: Copy = {
     'Chọn từ cho người kia, từ của bạn đã được quyết định: chú nghĩa là bạn là cháu, anh nghĩa là bạn là em. Trong câu chuyện gia đình không có “tôi” trung tính — đại từ chính là quan hệ, nói từ cả hai phía.',
   learnAudio:
     'Âm thanh dùng giọng tiếng Việt của điện thoại. Thêm giọng trong Cài đặt → Trợ năng → Nội dung đọc nếu nghe như tiếng Anh.',
+
+  account: 'Tài khoản',
+  accountIntro: 'Một cuốn sổ nhỏ về cách xưng hô, để sống trên Màn hình chính.',
+  accountLanguage: 'Ngôn ngữ',
+  accountNames: 'Người đã đặt tên',
+  accountNoNames: 'Chưa có tên nào. Mở một người thân và thêm tên của họ.',
+  accountData: 'Tên chỉ được lưu trên thiết bị này.',
+  accountVersion: 'Phiên bản',
+  accountClose: 'Đóng',
 }
 
-export const COPY: Record<Lang, Copy> = { en: EN, vi: VI }
+const SV: Copy = {
+  langLabel: 'Språk',
+  tabsLabel: 'Avsnitt',
+  tabAsk: 'Fråga',
+  tabTree: 'Träd',
+  tabLearn: 'Lär',
+
+  installTitle: 'Lägg Cội på hemskärmen',
+  installHint: 'Dela, sedan Lägg till på hemskärmen',
+  installDismiss: 'Stäng',
+
+  askEyebrow: 'Släktord · kinship',
+  askTitle: 'Vem är den här',
+  askTitleEm: 'personen',
+  askTitleTail: 'för dig?',
+  askLede:
+    'Skriv det som du skulle förklara det högt. Cội svarar med ordet du använder för dem — och det de använder för dig.',
+  askPlaceholder: 'min mammas yngre bror',
+  askHint: 'En släkting — eller ett namn du sparat.',
+  askClear: 'Rensa sökningen',
+  askStart: 'Börja med',
+  askRecent: 'Senaste',
+  askPeople: 'Dina personer',
+  askOther: 'Andra läsningar',
+  askOne: 'En läsning. Inget tvetydigt i den kedjan.',
+  askEmptyLabel: 'Inget hittat',
+  askEmptyBody:
+    'Beskriv kedjan i stället för titeln — “pappas äldre syster” eller “min systers man”. Fyra ord är lagom.',
+  emptyTitle: (query) => `Inget resultat för “${query}” ännu.`,
+  heroYou: 'Du kallar dem',
+  heroThem: 'De kallar dig',
+  hearIt: 'Lyssna',
+  fullPicture: 'Hela bilden',
+  namedBadge: 'ditt namn',
+  factsLabel: 'Tre saker att veta',
+  facts: [
+    {
+      title: 'Pronomen är en relation, inte en person.',
+      body: 'Din väns pappa är chú för dig och bác för någon två år äldre.',
+    },
+    {
+      title: 'Ålder slår släkt.',
+      body: 'Du måste veta om personen är äldre eller yngre än den som förbinder er — det enda avgör ordet.',
+    },
+    {
+      title: 'Du förändras också.',
+      body: 'När du talar till chú är du cháu. Paret rör sig tillsammans, åt båda håll, i samma mening.',
+    },
+  ],
+  chips: [
+    'min mammas yngre bror',
+    'min pappas äldre syster',
+    'min frus mamma',
+    'min äldre brors son',
+  ],
+
+  treeEyebrow: 'Släktträd · family tree',
+  treeTitle: 'Din familj,',
+  treeTitleEm: 'kartlagd',
+  treeTitleTail: '.',
+  treeLede:
+    'En karta, läst utåt från dig. Dra för att flytta, zooma, och tryck på någon för att spåra exakt hur ni är släkt.',
+  treeMapLabel: 'Kartan · the map',
+  treeDrag: 'dra · zooma',
+  treeHint: 'Du är roten. Tryck på någon för att spåra linjen tillbaka till dig.',
+  treeOpen: 'Öppna',
+  treeSelf: 'utgångspunkten',
+  treeNoi: 'bên nội',
+  treeNgoai: 'bên ngoại',
+  treeZoomIn: 'Zooma in',
+  treeZoomOut: 'Zooma ut',
+  treeReset: 'Centrera på dig',
+
+  detailYou: 'Du kallar dem',
+  detailThem: 'De kallar dig',
+  detailSay: 'Säg det högt',
+  detailHear: 'Hör hälsningen',
+  detailPronounce: 'Uttala',
+  detailNoVoice: 'Ingen röst',
+  detailSave: 'Spara',
+  detailSaved: 'Sparad',
+  detailClose: 'Stäng',
+  detailFoot: 'Cội · släktskap, inte en ordbok',
+
+  nameLabel: 'Deras namn',
+  namePlaceholder: 't.ex. Farbror Bình',
+  nameSave: 'Spara namn',
+  nameRemove: 'Ta bort namn',
+  nameHint: 'Sparas på den här enheten och går att söka.',
+
+  learnEyebrow: 'Lektioner · lessons',
+  learnTitle: 'Sex toner.',
+  learnTitleEm: 'En familj.',
+  learnLede:
+    'Vietnamesiskan lever i tonerna, och släktorden lever i vietnamesiskan. Börja med sex former av en stavelse, använd dem sedan på människor.',
+  learnTones: 'Sex toner · six tones',
+  learnTap: 'tryck för att lyssna',
+  learnPhrases: 'Säg det innan du behöver det',
+  learnRule: 'Regeln bakom varje pronomen',
+  learnRuleBody:
+    'Välj ordet för den andra, och ditt eget ord är redan bestämt: chú betyder att du är cháu, anh att du är em. Det finns inget neutralt “jag” i ett familjesamtal — pronomenet är relationen, sagt från båda håll.',
+  learnAudio:
+    'Ljudet använder telefonens vietnamesiska röst. Lägg till en i Inställningar → Tillgänglighet → Uppläst innehåll om det låter engelskt.',
+
+  account: 'Konto',
+  accountIntro: 'En liten handbok för vietnamesiskt släktskap, gjord för hemskärmen.',
+  accountLanguage: 'Språk',
+  accountNames: 'Namngivna personer',
+  accountNoNames: 'Inga namn än. Öppna en släkting och lägg till namnet.',
+  accountData: 'Namnen sparas bara på den här enheten.',
+  accountVersion: 'Version',
+  accountClose: 'Stäng',
+}
+
+export const COPY: Record<Lang, Copy> = { en: EN, vi: VI, sv: SV }
