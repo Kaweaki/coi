@@ -81,6 +81,16 @@ export function ArrowIcon({ size = 14, className }: IconProps) {
   )
 }
 
+export function ShareIcon({ size = 14, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden {...stroke}>
+      <path d="M12 14.9V3.7" />
+      <path d="M8.3 7.4 12 3.7l3.7 3.7" />
+      <path d="M6 11.8v6.6a1.6 1.6 0 0 0 1.6 1.6h8.8a1.6 1.6 0 0 0 1.6-1.6v-6.6" />
+    </svg>
+  )
+}
+
 export function SparkIcon({ size = 13, className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden {...stroke}>
