@@ -1,31 +1,28 @@
+import { useLang } from '../lib/lang'
 import { BookIcon, SearchIcon, TreeIcon } from './Icons'
 
 export type Tab = 'ask' | 'tree' | 'learn'
 
-const TABS: { id: Tab; label: string; Icon: typeof SearchIcon }[] = [
-  { id: 'ask', label: 'Ask', Icon: SearchIcon },
-  { id: 'tree', label: 'Tree', Icon: TreeIcon },
-  { id: 'learn', label: 'Learn', Icon: BookIcon },
+const TABS: { id: Tab; Icon: typeof SearchIcon }[] = [
+  { id: 'ask', Icon: SearchIcon },
+  { id: 'tree', Icon: TreeIcon },
+  { id: 'learn', Icon: BookIcon },
 ]
 
-export const TAB_META: Record<Tab, string> = {
-  ask: 'xưng hô · pronouns',
-  tree: 'gia đình · family',
-  learn: 'bài học · lessons',
-}
-
 export function TabBar({ tab, onChange }: { tab: Tab; onChange: (tab: Tab) => void }) {
+  const { t } = useLang()
   const index = TABS.findIndex((item) => item.id === tab)
 
   return (
-    <nav className="tabbar" aria-label="Sections">
+    <nav className="tabbar" aria-label={t.tabsLabel}>
       <span
         className="tabbar__pill"
         aria-hidden
         style={{ transform: `translateX(${index * 100}%)` }}
       />
-      {TABS.map(({ id, label, Icon }) => {
+      {TABS.map(({ id, Icon }) => {
         const active = id === tab
+        const label = id === 'ask' ? t.tabAsk : id === 'tree' ? t.tabTree : t.tabLearn
         return (
           <button
             key={id}

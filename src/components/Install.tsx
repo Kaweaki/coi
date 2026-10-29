@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useLang } from '../lib/lang'
 import { CloseIcon, ShareIcon } from './Icons'
 
 const DISMISSED = 'coi.install.dismissed'
@@ -27,6 +28,7 @@ function canOffer(): boolean {
 }
 
 export function InstallRail() {
+  const { t } = useLang()
   const [shown, setShown] = useState(canOffer)
   if (!shown) return null
 
@@ -40,15 +42,15 @@ export function InstallRail() {
   }
 
   return (
-    <aside className="install" aria-label="Install Cội on your iPhone">
+    <aside className="install" aria-label={t.installTitle}>
       <span className="install__icon">
         <ShareIcon size={13} />
       </span>
       <span className="install__copy">
-        <strong className="install__title">Keep Cội on your Home Screen</strong>
-        <span className="install__hint">Share, then Add to Home Screen</span>
+        <strong className="install__title">{t.installTitle}</strong>
+        <span className="install__hint">{t.installHint}</span>
       </span>
-      <button type="button" className="install__close" onClick={dismiss} aria-label="Dismiss">
+      <button type="button" className="install__close" onClick={dismiss} aria-label={t.installDismiss}>
         <CloseIcon size={11} />
       </button>
     </aside>

@@ -2,18 +2,30 @@ import { useEffect, useRef, useState } from 'react'
 import { Ask } from './components/Ask'
 import { Detail } from './components/Detail'
 import { InstallRail } from './components/Install'
+import { LangToggle } from './components/LangToggle'
 import { Learn } from './components/Learn'
-import { TabBar, TAB_META, type Tab } from './components/TabBar'
+import { TabBar, type Tab } from './components/TabBar'
 import { Tree } from './components/Tree'
+import { LangProvider, useLang } from './lib/lang'
 import type { Hit } from './lib/search'
 import { readList, writeList } from './lib/storage'
 
 export default function App() {
+  return (
+    <LangProvider>
+      <Shell />
+    </LangProvider>
+  )
+}
+
+function Shell() {
+  const { t } = useLang()
   const [tab, setTab] = useState<Tab>('ask')
   const [detail, setDetail] = useState<Hit | null>(null)
   const [recent, setRecent] = useState<string[]>(() => readList('coi.recent'))
   const [saved, setSaved] = useState<string[]>(() => readList('coi.saved'))
   const bodyRef = useRef<HTMLDivElement | null>(null)
+  const meta = tab === 'ask' ? t.metaAsk : tab === 'tree' ? t.metaTree : t.metaLearn
 
   useEffect(() => {
     bodyRef.current?.scrollTo({ top: 0 })
@@ -48,7 +60,10 @@ export default function App() {
             <span className="wordmark">Cội</span>
             <span className="brand__mark" aria-hidden />
           </div>
-          <span className="topbar__meta">{TAB_META[tab]}</span>
+          <div className="topbar__right">
+            <span className="topbar__meta">{meta}</span>
+            <LangToggle />
+          </div>
         </header>
 
         <InstallRail />
