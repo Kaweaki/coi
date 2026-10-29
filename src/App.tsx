@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Ask } from './components/Ask'
 import { Detail } from './components/Detail'
+import { InstallRail } from './components/Install'
 import { Learn } from './components/Learn'
 import { TabBar, TAB_META, type Tab } from './components/TabBar'
 import { Tree } from './components/Tree'
@@ -49,6 +50,8 @@ export default function App() {
           </div>
           <span className="topbar__meta">{TAB_META[tab]}</span>
         </header>
+
+        <InstallRail />
 
         <div className="body" ref={bodyRef} key={tab}>
           {tab === 'ask' ? <Ask onOpen={open} recents={recent} saved={saved} /> : null}
