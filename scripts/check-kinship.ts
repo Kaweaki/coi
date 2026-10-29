@@ -6,6 +6,7 @@
  */
 import { KINSHIP, PATH_INDEX } from '../src/data/kinship'
 import { MAP_H, MAP_NODES, MAP_W, kinFor, pathTo } from '../src/data/map'
+import { cleanName, findPeople, namedPeople, withName, withoutName } from '../src/lib/people'
 import { search } from '../src/lib/search'
 
 const cases: [string, string][] = [
@@ -27,6 +28,13 @@ const cases: [string, string][] = [
   ['ông nội', 'Ông nội'],
   ['cậu', 'Cậu'],
   ['chị dâu', 'Chị dâu'],
+  ['min mammas yngre bror', 'Cậu'],
+  ['min pappas äldre syster', 'Cô'],
+  ['min frus mamma', 'Mẹ vợ'],
+  ['min äldre brors son', 'Cháu'],
+  ['mormor', 'Bà ngoại'],
+  ['farfar', 'Ông nội'],
+  ['min systers man', 'Anh rể'],
 ]
 
 let failures = 0
@@ -37,6 +45,33 @@ for (const [query, expected] of cases) {
   const got = top ? `${top.kin.vi} (${top.kin.id}${top.exact ? ', exact' : ', fuzzy'})` : 'NONE'
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${query}  ->  ${got}${ok ? '' : `   [want ${expected}]`}`)
 }
+
+console.log('\nnames')
+const people = withName(withName({}, 'paternal-grandfather', '  Ông   Bảy '), 'mother', 'Mẹ Lan')
+const nameCases: [string, string | null][] = [
+  ['ông bảy', 'paternal-grandfather'],
+  ['Ông Bảy', 'paternal-grandfather'],
+  ['lan', 'mother'],
+  ['mẹ lan', 'mother'],
+  ['zzz', null],
+  ['o', null],
+]
+for (const [query, expected] of nameCases) {
+  const top = findPeople(people, query)[0]
+  const ok = (top?.kin.id ?? null) === expected
+  if (!ok) failures += 1
+  console.log(`${ok ? 'PASS' : 'FAIL'}  name "${query}"  ->  ${top ? `${top.name} (${top.kin.vi})` : 'none'}`)
+}
+const cleaned = cleanName('  Björn   Andersson  ')
+if (cleaned !== 'Björn Andersson') {
+  failures += 1
+  console.log(`FAIL cleanName -> "${cleaned}"`)
+}
+if (namedPeople(people).length !== 2 || withoutName(people, 'mother').mother) {
+  failures += 1
+  console.log('FAIL namedPeople / withoutName')
+}
+console.log(`named entries: ${namedPeople(people).length} · cleaned: "${cleaned}"`)
 
 console.log('\nambiguity')
 for (const query of ['uncle', 'aunt', 'cousin', 'brother', 'grandmother']) {
@@ -83,5 +118,5 @@ console.log(
   `map nodes: ${MAP_NODES.length} · pressable: ${pressable} · ${MAP_W}×${MAP_H} · every id resolves and every node reaches you`,
 )
 
-console.log(failures ? `\n${failures} FAILURES` : '\nall parse cases pass')
+console.log(failures ? `\n${failures} FAILURES` : '\nall checks pass')
 process.exit(failures ? 1 : 0)

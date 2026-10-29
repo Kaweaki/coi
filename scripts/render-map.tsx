@@ -9,15 +9,19 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { Tree } from '../src/components/Tree'
 import { MAP_NODES, kinFor } from '../src/data/map'
 
-const html = renderToStaticMarkup(<Tree onOpen={() => undefined} />)
-const nodes = (html.match(/class="node2[ "]/g) ?? []).length
+const people = { 'paternal-grandfather': 'Ông Bảy', mother: 'Mẹ Lan' }
+const html = renderToStaticMarkup(<Tree onOpen={() => undefined} people={people} />)
+const nodes = (html.match(/class="node2[ "]|class="node2 [^"]*"/g) ?? []).length
 const anchor = html.includes('node2--self')
 const names = MAP_NODES.map((node) => (node.self ? 'Bạn' : (kinFor(node.key)?.vi ?? '')))
 const missing = names.filter((name) => name && !html.includes(name))
+const namedLabels = ['Ông Bảy', 'Mẹ Lan'].filter((name) => html.includes(name))
 
-console.log(`map nodes: ${nodes}/${MAP_NODES.length} · bạn anchor: ${anchor} · missing names: ${missing.length}`)
+console.log(
+  `map nodes: ${nodes}/${MAP_NODES.length} · bạn anchor: ${anchor} · missing names: ${missing.length} · saved labels: ${namedLabels.length}/2`,
+)
 
-if (nodes !== MAP_NODES.length || !anchor || missing.length) {
+if (nodes !== MAP_NODES.length || !anchor || missing.length || namedLabels.length !== 2) {
   if (missing.length) console.log(missing.join(', '))
   process.exit(1)
 }
