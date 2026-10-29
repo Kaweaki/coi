@@ -9,6 +9,8 @@ export type Hit = {
   path: Step[]
   exact: boolean
   score: number
+  /** Set when the hit came from a name the user saved, not from the query text. */
+  namedAs?: string
 }
 
 const STOP = new Set([
