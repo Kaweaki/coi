@@ -20,8 +20,11 @@ person and your own word is already decided: **chú** means you are **cháu**; *
   and in-laws by marriage.
 - **Ambiguity handled** — “uncle” has four answers in Vietnamese. Ask for `uncle` and Cội shows
   all of them instead of guessing.
-- **Tree** — a pressable map of a sample family: four generations, nội on the left and ngoại on
-  the right, 23 buttons. Press anyone who is not you and get the pair, both directions.
+- **Tree** — one large map of a sample family: 24 people across four generations, nội on the
+  left and ngoại on the right, you at the centre of your own row. Drag to move, zoom with ±, and
+  press anyone: every line from you to them lights up and the pair appears, both directions.
+- **Two languages** — an EN / VI switch in the header retranslates the whole interface and
+  remembers the choice. The Vietnamese headwords stay Vietnamese, as they should.
 - **Learn** — the six tones on a single syllable, plus the greetings that use these pronouns.
 - **Offline** — installed as a PWA, it opens without a network and keeps your recents and saved
   people on the device.
@@ -37,7 +40,7 @@ person and your own word is already decided: **chú** means you are **cháu**; *
 It then opens full-screen with its own icon and a dark green status bar. On the first visit the app
 shows the same three steps in a rail above the content, then remembers being dismissed.
 
-The [v1.0.0 release](https://github.com/Kaweaki/coi/releases/tag/v1.0.0) repeats this for anyone
+The [v1.1.0 release](https://github.com/Kaweaki/coi/releases/tag/v1.1.0) repeats this for anyone
 arriving from the repository.
 
 ### Why there is no `.ipa`
@@ -93,15 +96,18 @@ usage varies — where it does (a father’s older sister, for instance, is `cô
 ```
 src/
   data/kinship.ts   46 relations, their paths, tones, notes
-  data/tree.ts      the sample family: generations, wings, nodes
+  data/map.ts       the family map: nodes, trunk lines, couples, path finder
   data/phrases.ts   tones and greeting phrases
   lib/parse.ts      English/Vietnamese phrase -> kin path
   lib/search.ts     path lookup + fuzzy alias scoring
+  lib/i18n.ts       every interface string, English and Vietnamese
+  lib/lang.tsx      language context, persisted to localStorage
   lib/speech.ts     vi-VN speech synthesis
   lib/storage.ts    recents and saved people (localStorage)
-  components/       Ask, Tree, Learn, Detail sheet, TabBar, Install rail, Icons
+  components/       Ask, Tree, Learn, Detail sheet, TabBar, LangToggle, Install rail, Icons
   styles.css        the design system
-  family-map.css    family map + install rail (loaded after styles.css)
+  family-map.css    the family map + install rail (loaded after styles.css)
+  shell.css         shell chrome: the language switch
 public/             manifest, service worker, icons
 scripts/            icon generator (Pillow), kinship + map checks
 .github/workflows/  Pages build + deploy
