@@ -43,6 +43,10 @@ state manager. Everything is client-side; the only network request is Google Fon
   standalone display, safe-area insets, no-zoom input.
 - Distribution: Pages workflow live, `v1.0.0` release published with install steps.
 - Engine checks: 14 parse cases pass, no duplicate ids, no path collisions.
+- Visual pass in Playwright Chromium at 390×844 (iPhone 13 emulation): Ask, map (all four
+  generations), install rail, hero answer, detail sheet, Learn. 23/23 buttons, minimum press
+  target 54px, `scrollWidth === clientWidth` at that width. Screenshots land in `artifacts/`
+  (gitignored).
 
 **Known gaps / deliberate omissions**
 
@@ -114,8 +118,8 @@ shell; the shell is a 432px frame on desktop, full-bleed under 640px.
 - Ambiguity is never hidden: the map shows the word families, the sheet explains the variant.
 
 **Install rail** (`src/family-map.css`) — an iOS-only dark strip under the topbar: share glyph in
-a 28px lime-tinted circle, one line of instruction, dismiss ×. It is chrome, not content, and it
-never appears on desktop or once installed.
+a 28px lime-tinted circle, one line of instruction, 34px dismiss target. It is chrome, not
+content, and it never appears on desktop or once installed.
 
 **Hard rules** — no emoji in UI, no icon library, no gradients on text, no `backdrop-blur` on
 scrolling content (only tab bar and sheet scrim).
@@ -239,8 +243,8 @@ Then, in a browser at iPhone width (390×844), check:
 9. 320px width and desktop 1440px — no clipped text, tab bar still floats.
 
 The GitHub Pages build is the same `npm run build`; a green Actions run plus a 200 at the Pages
-URL is the deployment check. There is no browser in this build environment, so visual checks at
-iPhone width still need a real device or a desktop browser.
+URL is the deployment check. The 1.0 visual pass was done headlessly with Playwright’s Chromium at
+390×844; §11 records how to bring that browser up in a fresh workspace.
 
 ---
 
@@ -282,3 +286,28 @@ iPhone width still need a real device or a desktop browser.
 5. **Practice** — recall drills on the pronouns you saved; spaced repetition on ~46 words is
    cheap and useful.
 6. **Share** — send a relation card as an image (aunties will love this).
+
+## 11. Headless browser in this workspace
+
+The container ships no browser libraries and there is no root. `apt-get` still works when its
+state is redirected, and the `.deb`s can be unpacked into a prefix:
+
+```bash
+mkdir -p /tmp/apt/lists/partial /tmp/libs && cd /tmp/libs
+apt-get -o Dir::State::lists=/tmp/apt/lists -o Dir::Cache=/tmp/apt update
+apt-get -o Dir::State::lists=/tmp/apt/lists -o Dir::Cache=/tmp/apt download \
+  libnspr4 libnss3 libatk1.0-0t64 libatk-bridge2.0-0t64 libatspi2.0-0t64 \
+  libxcomposite1 libxdamage1 libxfixes3 libxrandr2 libxrender1 libxkbcommon0 \
+  libasound2t64 libsqlite3-0 libdbus-1-3 libxi6 libxtst6
+for f in *.deb; do dpkg-deb -x "$f" root; done
+export LD_LIBRARY_PATH=/tmp/libs/root/usr/lib/x86_64-linux-gnu:/tmp/libs/root/lib/x86_64-linux-gnu
+
+npm install --prefix /tmp/pw playwright@1.64.1
+/tmp/pw/node_modules/.bin/playwright install chromium
+NODE_PATH=/tmp/pw/node_modules node artifacts/shots.mjs   # BASE=http://127.0.0.1:4173/
+```
+
+Serve the build with `npx vite preview --host 0.0.0.0 --port 4173` and drive it with
+`devices['iPhone 13']`. Neither the libraries nor the browser survive an archive, so rerun the
+recipe before the next visual pass. Web fonts load from Google, so the screenshots render properly
+even though the image has no system fonts (fontconfig will complain — harmless).
