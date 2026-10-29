@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024" role="img" aria-label="Cội">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="26%" r="82%">
+      <stop offset="0%" stop-color="#1E4535" />
+      <stop offset="58%" stop-color="#102A1F" />
+      <stop offset="100%" stop-color="#08170F" />
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#D9E9A8" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#D9E9A8" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)" />
+  <circle cx="512" cy="470" r="420" fill="url(#glow)" />
+  <g fill="none" stroke="#D9E9A8" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M512 372v172" />
+    <path d="M318 544h388" />
+    <path d="M318 544v112" />
+    <path d="M512 544v112" />
+    <path d="M706 544v112" />
+  </g>
+  <g fill="#0C2118" stroke="#D9E9A8" stroke-width="26">
+    <circle cx="512" cy="310" r="62" />
+    <circle cx="318" cy="626" r="62" />
+    <circle cx="512" cy="626" r="62" />
+    <circle cx="706" cy="626" r="62" />
+  </g>
+  <circle cx="512" cy="626" r="24" fill="#D9E9A8" stroke="none" />
+  <circle cx="512" cy="310" r="18" fill="#D9E9A8" stroke="none" />
+</svg>

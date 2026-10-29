@@ -1,0 +1,7 @@
+node_modules
+dist
+artifacts
+dist-ssr
+.DS_Store
+*.local
+.vite
