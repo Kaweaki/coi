@@ -3,7 +3,7 @@
 > Working notes for whoever picks this up next (including future me). Read this before touching
 > the code; it records the design decisions, not just the file list.
 >
-> **Last updated:** 2026-10-29 · **Version:** 0.1.0 · **State:** shipped, verified, installable PWA
+> **Last updated:** 2026-10-29 · **Version:** 1.0.0 · **State:** shipped — live on Pages, release published
 
 ---
 
@@ -13,8 +13,9 @@ Cội is an iPhone-first Vietnamese kinship app. One job done well: given a pers
 family, return the pronoun **you** use for them and the one **they** use for you — plus tone,
 pronunciation, a breadcrumb path, and the cultural note that makes it stick.
 
-It is a PWA, installable to the iOS home screen. There is no App Store build and no `.ipa`; that
-is a product decision, not an unfinished part (see §9).
+It is a PWA, installable to the iOS home screen from **https://kaweaki.github.io/coi/**. There is
+no `.ipa`: iOS will not install an unsigned bundle, and signing needs macOS + Xcode. That is a
+platform constraint, recorded in §9, not an unfinished part.
 
 Stack: Vite 5 + React 18 + TypeScript, hand-written CSS, no UI or icon libraries, no router, no
 state manager. Everything is client-side; the only network request is Google Fonts.
@@ -25,26 +26,37 @@ state manager. Everything is client-side; the only network request is Google Fon
 
 **Done and verified**
 
-- `npm run build` passes (tsc `--noEmit` + Vite), including from a fresh clone of the repo.
+- `npm run build` passes (tsc `--noEmit` + Vite), locally and from a fresh clone of the repo.
 - Ask screen: live search, hero answer, ambiguity list, recents, saved people, editorial empty
   state.
 - 46 relations, 85 distinct paths, 4 generations, both sides, in-laws, cousins, nephews/nieces.
 - Path parser handles possessives (“my mother’s younger brother”), “X of my Y”, age words,
   sibling ambiguity, Vietnamese tokens, and gives up gracefully on four-way words (uncle/aunt).
-- Tree, Learn (tones + phrases, speech synthesis), detail sheet with drag-to-dismiss.
-- PWA: manifest, icons (SVG + 192 PNG for the Apple touch icon), service worker, standalone
-  display, safe-area insets, no-zoom input.
+- Family map: four generations, nội on the left and ngoại on the right, 23 pressable relation
+  buttons, a “Bạn” anchor between the older and younger siblings, seams between generations,
+  tap → detail sheet. Verified by headless render (23/23 buttons, anchor present, no missing
+  names) and by the id scan in `scripts/check-kinship.ts`.
+- Install rail: shows only on iOS Safari when the app is not already on the home screen;
+  dismissible, remembered in localStorage (`coi.install.dismissed`).
+- Learn (tones + phrases, speech synthesis), detail sheet with drag-to-dismiss.
+- PWA: manifest, icons (SVG + 192 PNG for the Apple touch icon), service worker (`coi-v2`),
+  standalone display, safe-area insets, no-zoom input.
+- Distribution: Pages workflow live, `v1.0.0` release published with install steps.
 - Engine checks: 14 parse cases pass, no duplicate ids, no path collisions.
 
 **Known gaps / deliberate omissions**
 
-- No native wrapper (Capacitor/SwiftUI) — see §9.
+- No native wrapper (Capacitor/SwiftUI) and no `.ipa` — see §10.
 - Audio depends on a vi-VN voice being installed; the Learn screen says so.
-- The Tree is a *sample* family, not the user’s own tree. Saved people are a flat list.
+- The family map is a *sample* family, not the user’s own tree. Saved people are a flat list.
 - Parser does not model half-siblings, step-parents, godparents, or great-uncles/aunts.
 - No i18n: UI copy is English with Vietnamese terms, by design for a learner.
 - Only the northern standard is asserted; southern variants live in the notes.
-- Dependencies are not pinned by a lockfile yet (run `npm install` to generate one).
+- No lockfile is committed; Pages runs `npm install`, so dependency ranges are the pin. Add a
+  lockfile if the build ever needs to be bit-reproducible.
+- `styles.css` still carries the pre-1.0 `.tree` / `.branch` / `.node` block. It is unused since
+  the map rewrite and is superseded by `family-map.css`; delete it whenever that file is next
+  edited whole.
 
 ---
 
@@ -62,7 +74,7 @@ should feel like a printed field guide that happens to run at 120fps.
 | `--paper` | `#FBFAF3` | card cores |
 | `--moss` | `#16342A` | primary green, serif body |
 | `--moss-deep` | `#0B1F18` | darkest ink / tab bar |
-| `--sage` | `#7E9884` | labels, secondary text |
+| `--sage` | `#7E9884` | labels, secondary text, ngoại dot |
 | `--lime` | `#D9E9A8` | accent, active pill, hero pair values |
 | `--ink` | `#12211A` | text |
 | `--hair` | `rgba(18,33,26,.10)` | hairlines (never 1px gray borders) |
@@ -73,7 +85,7 @@ should feel like a printed field guide that happens to run at 120fps.
 - `--sans: Be Vietnam Pro` — everything else. Both have true Vietnamese subsets; do not swap for
   a font without one (Inter/Geist do not cover the diacritics properly for this use).
 - Display: `clamp(33px, 8.6vw, 40px)`, `line-height 1.02`, tracking `-0.025em`.
-- Micro labels: 9–9.5px, uppercase, tracking `.16–.20em`, `--sage` or `--ink-35`.
+- Micro labels: 7.5–9.5px, uppercase, tracking `.14–.20em`, `--sage` or `--ink-35`.
 
 **Surfaces** — every major card is a *double bezel*: 5px outer shell with a light gradient and a
 hairline ring, inner core with its own radius (`outer − 5px`), inset top highlight, soft ambient
@@ -86,6 +98,24 @@ nothing instant. Only transform/opacity animate. `prefers-reduced-motion` short-
 **Chrome** — no sticky edge-to-edge nav. A small wordmark top-left, a floating dark pill tab bar
 bottom with a lime indicator that slides between three tabs. Content scrolls *inside* the app
 shell; the shell is a 432px frame on desktop, full-bleed under 640px.
+
+**Family map** (`src/family-map.css`) — a generational ladder, not a graph drawing:
+
+- Four bands (Ông bà → Bố mẹ → Bạn → Đời sau), each a header (serif Vietnamese + micro English)
+  over a hairline rule.
+- Two-wing bands split nội left / ngoại right at a 1px centre rail; single-wing bands span the
+  width. Nội is marked with a moss dot, ngoại with sage.
+- Each node is a **button**, 54px minimum height, paper core, hairline ring, serif word + micro
+  English role, `scale(.955)` on press. Parents sit last in their wing so bố and mẹ share a
+  baseline above the seam.
+- “Bạn” is a full-width dark bar (`--moss-deep` gradient, lime word) spanning both columns — the
+  only non-interactive element, between older and younger siblings.
+- 26px seam with a 4px sage dot joins each generation; it lines up with the two-wing centre rail.
+- Ambiguity is never hidden: the map shows the word families, the sheet explains the variant.
+
+**Install rail** (`src/family-map.css`) — an iOS-only dark strip under the topbar: share glyph in
+a 28px lime-tinted circle, one line of instruction, dismiss ×. It is chrome, not content, and it
+never appears on desktop or once installed.
 
 **Hard rules** — no emoji in UI, no icon library, no gradients on text, no `backdrop-blur` on
 scrolling content (only tab bar and sheet scrim).
@@ -131,7 +161,7 @@ powers “closest thing we know” for unmapped branches.
 3. Fill `self`/`them` honestly — they are usually the reciprocal pair (`chú` ↔ `cháu`), except for
    children and nephews where the reverse term depends on *your* gender; write both, e.g.
    `'chú / cô'`, and explain in the note.
-4. Add the id to `data/tree.ts` if it belongs on the tree.
+4. Add the id to `data/tree.ts` if it belongs on the map.
 5. Rebuild; then type three phrasings that should hit it and one that shouldn’t.
 
 **Editorial policy** — assert the northern standard, note real variance instead of flattening it
@@ -165,10 +195,11 @@ what makes “aunt” open with cô and dì rather than dượng.
 | Screen | File | Notes |
 | --- | --- | --- |
 | Ask | `components/Ask.tsx` | Search + hero answer + recents/saved + 3 facts |
-| Tree | `components/Tree.tsx` | 4 horizontal branches, sample family, tap → sheet |
+| Tree | `components/Tree.tsx` | Generational map (`data/tree.ts`), 23 buttons, tap → sheet |
 | Learn | `components/Learn.tsx` | 6-tone grid on “ma”, 6 phrases, rule card |
 | Detail | `components/Detail.tsx` | Bottom sheet, drag-to-dismiss, path trail, greeting, save |
 | Shell | `App.tsx`, `components/TabBar.tsx` | Tab state, recents/saved persistence |
+| Install | `components/Install.tsx` | iOS-only add-to-home-screen rail, self-hiding |
 
 Navigation is a single `tab` state plus a `detail: Hit | null` overlay. Adding a screen means a
 new tab entry, a `TAB_META` label, and a component that renders sections (no page chrome).
@@ -184,9 +215,14 @@ fallback — buttons disable rather than pretending to speak.
 npm run build                      # typecheck + bundle, must be clean
 npm run preview                    # or npm run dev
 
-# engine checks (14 parse cases, ambiguity, duplicate/collision scan)
+# engine checks (14 parse cases, ambiguity, dataset + map id scans)
 npx esbuild scripts/check-kinship.ts --bundle --platform=node --format=esm \
   --outfile=/tmp/check-kinship.mjs && node /tmp/check-kinship.mjs
+
+# map check without a browser: every node becomes a button, the anchor renders
+npx esbuild scripts/render-map.tsx --bundle --platform=node --format=esm --jsx=automatic \
+  --external:react --external:react-dom --external:react-dom/server \
+  --outfile=/tmp/render-map.mjs && node /tmp/render-map.mjs
 ```
 
 Then, in a browser at iPhone width (390×844), check:
@@ -197,8 +233,14 @@ Then, in a browser at iPhone width (390×844), check:
 4. Type `my wife's mother` → Mẹ vợ, con ↔ mẹ.
 5. Open a result → sheet slides, path trail matches, greeting reads naturally.
 6. Save it → appears under “Your people”, survives reload.
-7. Tree → every node opens a sheet; the “Bạn” node is not a button.
-8. 320px width and desktop 1440px — no clipped text, tab bar still floats.
+7. Tree → four bands, nội left / ngoại right, every name opens a sheet, “Bạn” is not a button,
+   nothing overflows at 390px.
+8. Install rail → only on iOS Safari, dismisses and stays dismissed.
+9. 320px width and desktop 1440px — no clipped text, tab bar still floats.
+
+The GitHub Pages build is the same `npm run build`; a green Actions run plus a 200 at the Pages
+URL is the deployment check. There is no browser in this build environment, so visual checks at
+iPhone width still need a real device or a desktop browser.
 
 ---
 
@@ -206,13 +248,30 @@ Then, in a browser at iPhone width (390×844), check:
 
 - No comments unless they explain *why*. No `any`. No unused exports (`noUnusedLocals` is on).
 - Components are named exports except `App`; props typed inline above the component.
-- CSS is one file with section banners; add classes near their section, use tokens only.
+- CSS is one design-system file plus `family-map.css` for the map and install rail; add classes
+  near their section, use tokens only.
 - Anything user-generated or id-based goes through `lib/storage.ts` (fails silently in private
   mode).
-- Keep the dataset and the tree in sync: `tree.ts` may only reference ids that exist in
-  `kinship.ts`.
+- Keep the dataset and the map in sync: `tree.ts` may only reference ids that exist in
+  `kinship.ts` (the check script enforces this).
 
-## 9. Roadmap (agreed direction, not started)
+## 9. Distribution
+
+- **Hosting** — GitHub Pages, build type *workflow*. `.github/workflows/pages.yml` runs
+  `npm install && npm run build` and publishes `dist/`. Live at
+  **https://kaweaki.github.io/coi/**. Vite uses `base: './'`, so the build also works at a domain
+  root or any subfolder.
+- **Install** — Safari → Share → Add to Home Screen. That is the only install path iOS permits
+  without a signed bundle; the in-app rail exists to teach it. Detect iOS Safari + not-standalone
+  with `navigator.standalone` and `display-mode`; hide in Chrome/Firefox on iOS, which cannot
+  install.
+- **Release** — `v1.0.0`, target `main`, release notes repeat the install steps and link to the
+  hosted app. GitHub Releases cannot attach binaries through this toolchain, so the release page
+  is the install guide rather than a download.
+- **Never** claim an `.ipa`: unsigned bundles do not install on iOS, and signing requires macOS,
+  Xcode and an Apple identity. A Capacitor shell is the only route there (§10).
+
+## 10. Roadmap (agreed direction, not started)
 
 1. **My people** — name real relatives, store the path, and build a personal tree from them.
 2. **Native shell** — Capacitor wrap for a real `.ipa` (signing via Xcode or AltStore/SideStore),
