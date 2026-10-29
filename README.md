@@ -9,6 +9,8 @@ Vietnamese pronouns are not vocabulary, they are relationships. Pick the word fo
 person and your own word is already decided: **chú** means you are **cháu**; **anh** means you are
 **em**. Cội answers both directions at once.
 
+**Live: [kaweaki.github.io/coi](https://kaweaki.github.io/coi/)**
+
 ## What it does
 
 - **Ask** — type the relationship the way you would say it out loud (“my mother’s younger
@@ -18,22 +20,33 @@ person and your own word is already decided: **chú** means you are **cháu**; *
   and in-laws by marriage.
 - **Ambiguity handled** — “uncle” has four answers in Vietnamese. Ask for `uncle` and Cội shows
   all of them instead of guessing.
-- **Tree** — a sample family, four generations deep. Tap anyone.
+- **Tree** — a pressable map of a sample family: four generations, nội on the left and ngoại on
+  the right, 23 buttons. Press anyone who is not you and get the pair, both directions.
 - **Learn** — the six tones on a single syllable, plus the greetings that use these pronouns.
 - **Offline** — installed as a PWA, it opens without a network and keeps your recents and saved
   people on the device.
 
 ## Install it on an iPhone
 
-The app is a **PWA** (an installable web app), not a signed `.ipa`. That is deliberate: it needs
-no App Store, no developer account, no 7-day resigning.
+**Live: [kaweaki.github.io/coi](https://kaweaki.github.io/coi/)**
 
-1. Host the built app anywhere with HTTPS (see below), or open a local preview on your phone.
-2. Open the URL in **Safari** on the iPhone.
-3. Tap **Share → Add to Home Screen**.
+1. Open that URL in **Safari** on the iPhone (Chrome cannot install web apps on iOS).
+2. Tap **Share → Add to Home Screen**.
+3. Name it Cội → **Add**.
 
-It then opens full-screen, with its own icon and a dark green status bar — indistinguishable
-from a small native app in daily use. Audio uses the phone’s Vietnamese system voice.
+It then opens full-screen with its own icon and a dark green status bar. On the first visit the app
+shows the same three steps in a rail above the content, then remembers being dismissed.
+
+The [v1.0.0 release](https://github.com/Kaweaki/coi/releases/tag/v1.0.0) repeats this for anyone
+arriving from the repository.
+
+### Why there is no `.ipa`
+
+An `.ipa` is a zip of a **signed** app bundle. iOS refuses unsigned binaries — not through
+GitHub, not over AirDrop — and signing one needs macOS, Xcode and an Apple signing identity.
+That build cannot be produced from a Linux CI runner. The PWA route buys the same home-screen
+icon, full-screen window and offline shell without an App Store review or a 7-day resigning cycle.
+A Capacitor shell is the only path to a real `.ipa`; §10 of `SKILL.md` records it.
 
 ## Run it
 
@@ -51,10 +64,11 @@ Requires Node 18+.
 The build is fully static and uses relative asset paths (`base: './'`), so it works at a domain
 root or in a subfolder.
 
+- **GitHub Pages** — already wired: `.github/workflows/pages.yml` runs `npm install && npm run
+  build` and publishes `dist/` on every push to `main`. Pages is set to build from GitHub Actions,
+  so there is nothing to configure.
 - **Cloudflare Pages / Vercel / Netlify** — build command `npm run build`, output directory
   `dist`.
-- **GitHub Pages** — push `dist/` to a `gh-pages` branch (or `/docs` on `main`) and enable Pages
-  in the repository settings. No further configuration needed.
 
 ## How the kinship model works
 
@@ -79,16 +93,18 @@ usage varies — where it does (a father’s older sister, for instance, is `cô
 ```
 src/
   data/kinship.ts   46 relations, their paths, tones, notes
-  data/tree.ts      the sample family on the Tree screen
+  data/tree.ts      the sample family: generations, wings, nodes
   data/phrases.ts   tones and greeting phrases
   lib/parse.ts      English/Vietnamese phrase -> kin path
   lib/search.ts     path lookup + fuzzy alias scoring
   lib/speech.ts     vi-VN speech synthesis
   lib/storage.ts    recents and saved people (localStorage)
-  components/       Ask, Tree, Learn, Detail sheet, TabBar, Icons
-  styles.css        the whole design system
+  components/       Ask, Tree, Learn, Detail sheet, TabBar, Install rail, Icons
+  styles.css        the design system
+  family-map.css    family map + install rail (loaded after styles.css)
 public/             manifest, service worker, icons
-scripts/            icon generator (Pillow), kinship engine checks
+scripts/            icon generator (Pillow), kinship + map checks
+.github/workflows/  Pages build + deploy
 SKILL.md            design system + working notes, kept current
 ```
 
