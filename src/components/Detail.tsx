@@ -2,25 +2,33 @@ import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPoi
 import type { Hit } from '../lib/search'
 import { STEP_EN, STEP_LABEL } from '../data/kinship'
 import { useLang } from '../lib/lang'
+import { cleanName } from '../lib/people'
 import { hasSpeech, speak } from '../lib/speech'
-import { CloseIcon, SoundIcon, StarIcon } from './Icons'
+import { CloseIcon, SoundIcon, StarIcon, TagIcon } from './Icons'
 
 type DetailProps = {
   hit: Hit
   saved: boolean
+  name: string
+  onName: (id: string, name: string) => void
   onToggleSave: () => void
   onClose: () => void
 }
 
-export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
+export function Detail({ hit, saved, name, onName, onToggleSave, onClose }: DetailProps) {
   const { kin, path } = hit
   const { lang, t } = useLang()
   const labels = lang === 'vi' ? STEP_LABEL : STEP_EN
   const [drag, setDrag] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [closing, setClosing] = useState(false)
+  const [draft, setDraft] = useState(name)
   const startY = useRef(0)
   const spoken = hasSpeech()
+
+  useEffect(() => {
+    setDraft(name)
+  }, [name, kin.id])
 
   const requestClose = useCallback(() => {
     setClosing(true)
@@ -57,6 +65,12 @@ export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
   }
 
   const canGreet = !kin.you.includes('/') && !kin.self.includes('/')
+  const dirty = cleanName(draft) !== name
+
+  const commit = () => {
+    if (!dirty) return
+    onName(kin.id, draft)
+  }
 
   return (
     <div className={`sheet${closing ? ' sheet--closing' : ''}`}>
@@ -91,7 +105,7 @@ export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
               onClick={requestClose}
               aria-label={t.detailClose}
             >
-              <CloseIcon size={12} />
+              <CloseIcon size={13} />
             </button>
           </div>
 
@@ -101,6 +115,12 @@ export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
             {kin.tone ? <span className="dot" aria-hidden /> : null}
             {kin.tone ? <span>{kin.tone}</span> : null}
           </div>
+
+          {name ? (
+            <p className="sheet__name">
+              <TagIcon size={12} /> {name}
+            </p>
+          ) : null}
 
           <div className="pathbar" aria-label={t.treeMapLabel}>
             <span className="pathbar__node">bạn</span>
@@ -125,6 +145,50 @@ export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
             </div>
           </div>
 
+          <form
+            className="namer"
+            onSubmit={(event) => {
+              event.preventDefault()
+              commit()
+              ;(event.currentTarget.elements.namedItem('kin-name') as HTMLInputElement | null)?.blur()
+            }}
+          >
+            <label className="label" htmlFor="kin-name">
+              {t.nameLabel}
+            </label>
+            <div className="namer__row">
+              <input
+                id="kin-name"
+                name="kin-name"
+                className="namer__input"
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder={t.namePlaceholder}
+                autoComplete="off"
+                maxLength={28}
+                enterKeyHint="done"
+              />
+              <button type="submit" className="namer__save" disabled={!dirty}>
+                {t.nameSave}
+              </button>
+            </div>
+            <div className="namer__foot">
+              <span>{t.nameHint}</span>
+              {name ? (
+                <button
+                  type="button"
+                  className="namer__remove"
+                  onClick={() => {
+                    setDraft('')
+                    onName(kin.id, '')
+                  }}
+                >
+                  {t.nameRemove}
+                </button>
+              ) : null}
+            </div>
+          </form>
+
           <p className="sheet__gloss">{kin.gloss}</p>
 
           {kin.note ? (
@@ -139,7 +203,11 @@ export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
               <p className="sayit__vi">
                 Dạ, {kin.self} chào {kin.you} ạ.
               </p>
-              <button type="button" className="sayit__btn" onClick={() => speak(`Dạ, ${kin.self} chào ${kin.you} ạ.`)}>
+              <button
+                type="button"
+                className="sayit__btn"
+                onClick={() => speak(`Dạ, ${kin.self} chào ${kin.you} ạ.`)}
+              >
                 <SoundIcon size={12} />
                 <span>{t.detailHear}</span>
               </button>

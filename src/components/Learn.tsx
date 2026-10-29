@@ -8,6 +8,15 @@ export function Learn() {
   const { lang, t } = useLang()
   const spoken = hasSpeech()
 
+  const toneGloss = (tone: (typeof TONES)[number]) =>
+    lang === 'vi' ? tone.vi : lang === 'sv' ? tone.sv : tone.en
+  const toneContour = (tone: (typeof TONES)[number]) =>
+    lang === 'vi' ? tone.contourVi : lang === 'sv' ? tone.contourSv : tone.contour
+  const phraseGloss = (phrase: (typeof PHRASES)[number]) =>
+    lang === 'sv' ? phrase.sv : phrase.en
+  const phraseNote = (phrase: (typeof PHRASES)[number]) =>
+    lang === 'vi' ? (phrase.noteVi ?? phrase.note) : lang === 'sv' ? (phrase.noteSv ?? phrase.note) : phrase.note
+
   return (
     <>
       <section className="intro rise" style={rise(0)}>
@@ -35,10 +44,8 @@ export function Learn() {
               <span className="tone__word">{tone.word}</span>
               <span className="tone__meta">
                 <span className="tone__name">{tone.tone}</span>
-                <span className="tone__en">{lang === 'vi' ? tone.vi : tone.en}</span>
-                <span className="tone__contour">
-                  {lang === 'vi' ? tone.contourVi : tone.contour}
-                </span>
+                <span className="tone__en">{toneGloss(tone)}</span>
+                <span className="tone__contour">{toneContour(tone)}</span>
               </span>
               <SoundIcon size={13} className="tone__icon" />
             </button>
@@ -61,12 +68,8 @@ export function Learn() {
               disabled={!spoken}
             >
               <span className="phrase__vi">{phrase.vi}</span>
-              <span className="phrase__en">{phrase.en}</span>
-              {phrase.note ? (
-                <span className="phrase__note">
-                  {lang === 'vi' && phrase.noteVi ? phrase.noteVi : phrase.note}
-                </span>
-              ) : null}
+              <span className="phrase__en">{phraseGloss(phrase)}</span>
+              {phrase.note ? <span className="phrase__note">{phraseNote(phrase)}</span> : null}
               <span className="phrase__play" aria-hidden>
                 <SoundIcon size={14} />
               </span>
