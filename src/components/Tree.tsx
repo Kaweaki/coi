@@ -11,8 +11,9 @@ import {
 } from '../data/map'
 import type { Hit } from '../lib/search'
 import { useLang } from '../lib/lang'
+import { nameFor, type People } from '../lib/people'
 import { rise } from '../lib/motion'
-import { ArrowIcon, SparkIcon, TargetIcon } from './Icons'
+import { ArrowIcon, SparkIcon, TagIcon, TargetIcon } from './Icons'
 
 const ZOOMS = [0.55, 0.65, 0.75, 0.9, 1.05]
 const START = 2
@@ -35,7 +36,7 @@ function across(leftX: number, rightX: number, y: number) {
   return `M ${from} ${y} C ${mid} ${y - lift}, ${mid} ${y - lift}, ${to} ${y}`
 }
 
-export function Tree({ onOpen }: { onOpen: (hit: Hit) => void }) {
+export function Tree({ onOpen, people }: { onOpen: (hit: Hit) => void; people: People }) {
   const { t } = useLang()
   const [selected, setSelected] = useState<string | null>(null)
   const [zoomIndex, setZoomIndex] = useState(START)
@@ -85,6 +86,7 @@ export function Tree({ onOpen }: { onOpen: (hit: Hit) => void }) {
   )
 
   const chosen = selected ? kinFor(selected) : null
+  const chosenName = chosen ? nameFor(people, chosen.id) : ''
   const chainText = chain.map((key) => (key === 'you' ? 'bạn' : (kinFor(key)?.vi ?? ''))).join(' → ')
 
   useEffect(() => {
@@ -131,10 +133,7 @@ export function Tree({ onOpen }: { onOpen: (hit: Hit) => void }) {
             aria-label={t.treeMapLabel}
             tabIndex={0}
           >
-            <div
-              className="map2__stage"
-              style={{ width: MAP_W * zoom, height: MAP_H * zoom }}
-            >
+            <div className="map2__stage" style={{ width: MAP_W * zoom, height: MAP_H * zoom }}>
               <div
                 className="map2__canvas"
                 style={{ width: MAP_W, height: MAP_H, transform: `scale(${zoom})` }}
@@ -162,11 +161,13 @@ export function Tree({ onOpen }: { onOpen: (hit: Hit) => void }) {
 
                 {MAP_NODES.map((node) => {
                   const kin = node.self ? null : kinFor(node.key)
+                  const name = node.self ? '' : nameFor(people, node.kinId)
                   const isSelected = node.key === selected
                   const onPath = chain.includes(node.key)
                   const dim = Boolean(selected) && !onPath
                   const classes = ['node2']
                   if (node.self) classes.push('node2--self')
+                  if (name) classes.push('node2--named')
                   if (isSelected) classes.push('node2--on')
                   else if (onPath) classes.push('node2--path')
                   if (dim && !node.self) classes.push('node2--dim')
@@ -181,12 +182,12 @@ export function Tree({ onOpen }: { onOpen: (hit: Hit) => void }) {
                       aria-pressed={isSelected}
                       aria-label={
                         kin
-                          ? `${kin.vi} — ${kin.en}. ${t.heroYou} ${kin.you}; ${t.heroThem} ${kin.them}.`
+                          ? `${name ? `${name}, ` : ''}${kin.vi} — ${kin.en}. ${t.heroYou} ${kin.you}; ${t.heroThem} ${kin.them}.`
                           : 'Bạn — you are here'
                       }
                     >
                       <span className="node2__vi">{kin ? kin.vi : 'Bạn'}</span>
-                      <span className="node2__en">{kin ? kin.en : t.treeSelf}</span>
+                      <span className="node2__en">{node.self ? t.treeSelf : name || kin?.en}</span>
                     </button>
                   )
                 })}
@@ -212,11 +213,7 @@ export function Tree({ onOpen }: { onOpen: (hit: Hit) => void }) {
             >
               +
             </button>
-            <button
-              type="button"
-              onClick={() => setZoomIndex(START)}
-              aria-label={t.treeReset}
-            >
+            <button type="button" onClick={() => setZoomIndex(START)} aria-label={t.treeReset}>
               <TargetIcon size={14} />
             </button>
           </div>
@@ -234,6 +231,11 @@ export function Tree({ onOpen }: { onOpen: (hit: Hit) => void }) {
               </div>
               <div className="picked__body">
                 <span className="picked__vi">{chosen.vi}</span>
+                {chosenName ? (
+                  <span className="picked__name">
+                    <TagIcon size={11} /> {chosenName}
+                  </span>
+                ) : null}
                 <span className="picked__pair">
                   <span>
                     {t.heroYou} <b>{chosen.you}</b>

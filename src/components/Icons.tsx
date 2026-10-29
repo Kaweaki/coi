@@ -101,6 +101,32 @@ export function TargetIcon({ size = 15, className }: IconProps) {
   )
 }
 
+export function PersonIcon({ size = 16, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden {...stroke}>
+      <circle cx="12" cy="8.4" r="3.5" />
+      <path d="M5.4 19.6c.9-3.2 3.4-4.9 6.6-4.9s5.7 1.7 6.6 4.9" />
+    </svg>
+  )
+}
+
+export function CheckIcon({ size = 14, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden {...stroke}>
+      <path d="m5.2 12.4 4.3 4.3 9.3-9.3" />
+    </svg>
+  )
+}
+
+export function TagIcon({ size = 13, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden {...stroke}>
+      <path d="M4.4 4.4h7.1l8.1 8.1-7.1 7.1-8.1-8.1Z" />
+      <circle cx="8.7" cy="8.7" r="1.15" />
+    </svg>
+  )
+}
+
 export function SparkIcon({ size = 13, className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden {...stroke}>
