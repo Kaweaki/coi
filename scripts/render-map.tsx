@@ -3,7 +3,7 @@
  *
  *   npx esbuild scripts/render-map.tsx --bundle --platform=node --format=esm --jsx=automatic \
  *     --external:react --external:react-dom --external:react-dom/server \
- *     --outfile=/tmp/render-map.mjs && node /tmp/render-map.mjs
+ *     --outfile=node_modules/.cache/render-map.mjs && node node_modules/.cache/render-map.mjs
  */
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Tree } from '../src/components/Tree'
