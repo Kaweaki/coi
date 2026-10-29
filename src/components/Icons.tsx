@@ -91,6 +91,16 @@ export function ShareIcon({ size = 14, className }: IconProps) {
   )
 }
 
+export function TargetIcon({ size = 15, className }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden {...stroke}>
+      <circle cx="12" cy="12" r="7.2" />
+      <circle cx="12" cy="12" r="2.4" />
+      <path d="M12 2.6v2.4M12 19v2.4M2.6 12h2.4M19 12h2.4" />
+    </svg>
+  )
+}
+
 export function SparkIcon({ size = 13, className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} className={className} aria-hidden {...stroke}>
