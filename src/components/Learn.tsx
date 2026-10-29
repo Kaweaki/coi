@@ -1,28 +1,27 @@
 import { PHRASES, TONES } from '../data/phrases'
+import { useLang } from '../lib/lang'
 import { rise } from '../lib/motion'
 import { hasSpeech, speak } from '../lib/speech'
 import { SoundIcon } from './Icons'
 
 export function Learn() {
+  const { lang, t } = useLang()
   const spoken = hasSpeech()
 
   return (
     <>
       <section className="intro rise" style={rise(0)}>
-        <span className="eyebrow">Bài học · lessons</span>
+        <span className="eyebrow">{t.learnEyebrow}</span>
         <h1 className="display">
-          Six tones. <em>One family.</em>
+          {t.learnTitle} <em>{t.learnTitleEm}</em>
         </h1>
-        <p className="lede">
-          Vietnamese lives in its tones, and the family words live in Vietnamese. Start with the six
-          shapes of a single syllable, then use them on people.
-        </p>
+        <p className="lede">{t.learnLede}</p>
       </section>
 
       <section className="lesson rise" style={rise(1)}>
         <div className="lesson__head">
-          <span className="label">Sáu thanh điệu · six tones</span>
-          <span className="lesson__hint">tap to hear</span>
+          <span className="label">{t.learnTones}</span>
+          <span className="lesson__hint">{t.learnTap}</span>
         </div>
         <div className="tones">
           {TONES.map((tone) => (
@@ -36,8 +35,10 @@ export function Learn() {
               <span className="tone__word">{tone.word}</span>
               <span className="tone__meta">
                 <span className="tone__name">{tone.tone}</span>
-                <span className="tone__en">{tone.en}</span>
-                <span className="tone__contour">{tone.contour}</span>
+                <span className="tone__en">{lang === 'vi' ? tone.vi : tone.en}</span>
+                <span className="tone__contour">
+                  {lang === 'vi' ? tone.contourVi : tone.contour}
+                </span>
               </span>
               <SoundIcon size={13} className="tone__icon" />
             </button>
@@ -47,7 +48,7 @@ export function Learn() {
 
       <section className="block rise" style={rise(2)}>
         <div className="block__head">
-          <span className="label">Say it before you need it</span>
+          <span className="label">{t.learnPhrases}</span>
           <span className="block__count">{PHRASES.length}</span>
         </div>
         <div className="phrases">
@@ -61,7 +62,11 @@ export function Learn() {
             >
               <span className="phrase__vi">{phrase.vi}</span>
               <span className="phrase__en">{phrase.en}</span>
-              {phrase.note ? <span className="phrase__note">{phrase.note}</span> : null}
+              {phrase.note ? (
+                <span className="phrase__note">
+                  {lang === 'vi' && phrase.noteVi ? phrase.noteVi : phrase.note}
+                </span>
+              ) : null}
               <span className="phrase__play" aria-hidden>
                 <SoundIcon size={14} />
               </span>
@@ -71,18 +76,11 @@ export function Learn() {
       </section>
 
       <section className="note-card rise" style={rise(3)}>
-        <span className="label">The rule behind every pronoun</span>
-        <p>
-          Pick the word for the other person, and your own word is already decided: chú means you are
-          cháu, anh means you are em. There is no neutral “I” in a family conversation — the pronoun
-          is the relationship, spoken from both ends.
-        </p>
+        <span className="label">{t.learnRule}</span>
+        <p>{t.learnRuleBody}</p>
       </section>
 
-      <p className="tail-note">
-        Audio uses your phone’s Vietnamese voice. Add one in Settings → Accessibility → Spoken
-        Content if it sounds like English.
-      </p>
+      <p className="tail-note">{t.learnAudio}</p>
     </>
   )
 }

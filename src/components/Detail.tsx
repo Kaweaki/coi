@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import type { Hit } from '../lib/search'
-import { STEP_LABEL } from '../data/kinship'
+import { STEP_EN, STEP_LABEL } from '../data/kinship'
+import { useLang } from '../lib/lang'
 import { hasSpeech, speak } from '../lib/speech'
 import { CloseIcon, SoundIcon, StarIcon } from './Icons'
 
@@ -13,6 +14,8 @@ type DetailProps = {
 
 export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
   const { kin, path } = hit
+  const { lang, t } = useLang()
+  const labels = lang === 'vi' ? STEP_LABEL : STEP_EN
   const [drag, setDrag] = useState(0)
   const [dragging, setDragging] = useState(false)
   const [closing, setClosing] = useState(false)
@@ -82,7 +85,12 @@ export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
         <div className="sheet__scroll">
           <div className="sheet__head">
             <span className="label">{kin.en}</span>
-            <button type="button" className="sheet__close" onClick={requestClose} aria-label="Close">
+            <button
+              type="button"
+              className="sheet__close"
+              onClick={requestClose}
+              aria-label={t.detailClose}
+            >
               <CloseIcon size={12} />
             </button>
           </div>
@@ -94,25 +102,25 @@ export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
             {kin.tone ? <span>{kin.tone}</span> : null}
           </div>
 
-          <div className="pathbar" aria-label="Path from you">
+          <div className="pathbar" aria-label={t.treeMapLabel}>
             <span className="pathbar__node">bạn</span>
             {path.map((step, index) => (
               <span key={`${step}-${index}`} className="pathbar__step">
                 <span className="pathbar__arrow" aria-hidden>
                   →
                 </span>
-                <span className="pathbar__node">{STEP_LABEL[step]}</span>
+                <span className="pathbar__node">{labels[step]}</span>
               </span>
             ))}
           </div>
 
           <div className="pairgrid">
             <div className="cell">
-              <span className="cell__k">You call them</span>
+              <span className="cell__k">{t.detailYou}</span>
               <span className="cell__v">{kin.you}</span>
             </div>
             <div className="cell cell--alt">
-              <span className="cell__k">They call you</span>
+              <span className="cell__k">{t.detailThem}</span>
               <span className="cell__v">{kin.them}</span>
             </div>
           </div>
@@ -127,13 +135,13 @@ export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
 
           {canGreet ? (
             <div className="sayit">
-              <span className="label">Say it out loud</span>
+              <span className="label">{t.detailSay}</span>
               <p className="sayit__vi">
                 Dạ, {kin.self} chào {kin.you} ạ.
               </p>
               <button type="button" className="sayit__btn" onClick={() => speak(`Dạ, ${kin.self} chào ${kin.you} ạ.`)}>
                 <SoundIcon size={12} />
-                <span>Hear the greeting</span>
+                <span>{t.detailHear}</span>
               </button>
             </div>
           ) : null}
@@ -146,7 +154,7 @@ export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
               disabled={!spoken}
             >
               <SoundIcon size={14} />
-              <span>{spoken ? 'Pronounce' : 'No voice'}</span>
+              <span>{spoken ? t.detailPronounce : t.detailNoVoice}</span>
             </button>
             <button
               type="button"
@@ -155,11 +163,11 @@ export function Detail({ hit, saved, onToggleSave, onClose }: DetailProps) {
               aria-pressed={saved}
             >
               <StarIcon size={13} />
-              <span>{saved ? 'Saved' : 'Save'}</span>
+              <span>{saved ? t.detailSaved : t.detailSave}</span>
             </button>
           </div>
 
-          <p className="sheet__foot">Cội · bảng xưng hô, not a dictionary</p>
+          <p className="sheet__foot">{t.detailFoot}</p>
         </div>
       </div>
     </div>
