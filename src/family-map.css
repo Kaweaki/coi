@@ -298,8 +298,9 @@
   flex: 0 0 auto;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 34px;
+  height: 34px;
+  margin-right: -4px;
   border-radius: 50%;
   color: rgba(217, 233, 168, 0.55);
   transition:
