@@ -222,7 +222,7 @@ npx esbuild scripts/check-kinship.ts --bundle --platform=node --format=esm \
 # map check without a browser: every node becomes a button, the anchor renders
 npx esbuild scripts/render-map.tsx --bundle --platform=node --format=esm --jsx=automatic \
   --external:react --external:react-dom --external:react-dom/server \
-  --outfile=/tmp/render-map.mjs && node /tmp/render-map.mjs
+  --outfile=node_modules/.cache/render-map.mjs && node node_modules/.cache/render-map.mjs
 ```
 
 Then, in a browser at iPhone width (390×844), check:
