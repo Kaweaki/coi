@@ -3,7 +3,8 @@
 > Working notes for whoever picks this up next (including future me). Read this before touching
 > the code; it records the design decisions, not just the file list.
 >
-> **Last updated:** 2026-10-29 · **Version:** 1.1.0 · **State:** shipped — live on Pages, v1.1.0 release published
+> **Last updated:** 2026-10-29 · **Version:** 2.0.0 · **State:** built and verified locally —
+> live on Pages at the last pushed commit, v2.0.0 release published
 
 ---
 
@@ -24,123 +25,117 @@ state manager. Everything is client-side; the only network request is Google Fon
 
 ## 2. Where things stand
 
-**Done and verified**
+**Shipped in 1.0 / 1.1**
 
-- `npm run build` passes (tsc `--noEmit` + Vite) on the current source.
 - Ask screen: live search, hero answer, ambiguity list, recents, saved people, editorial empty
   state. All copy and the suggestion chips come from the language table.
 - 46 relations, 85 distinct paths, 4 generations, both sides, in-laws, cousins, nephews/nieces.
-- Path parser handles possessives (“my mother’s younger brother”), “X of my Y”, age words,
-  sibling ambiguity, Vietnamese tokens, and gives up gracefully on four-way words (uncle/aunt).
-- **Family map (1.1)** — one 1680×1160 canvas, 24 people over four generations, pan and zoom.
-  Nội left, ngoại right, you at the centre of your own row. Pressing a person:
-  dims the rest, lights the exact chain from you with a lime glow, and shows the chain
-  (`bạn → Bố → Chú`) plus the reciprocal pair in a card under the map. “Open” replaces the card
-  with the full detail sheet. The nội / ngoại labels are pinned to the frame corners, not the
-  canvas, so orientation survives panning.
-- **Language switch (1.1)** — EN / VI segmented control in the topbar. Every interface string
-  lives in `lib/i18n.ts` as one typed `Copy` object per language; the choice persists in
-  localStorage (`coi.lang`) and sets `<html lang>`. Vietnamese headwords, tone words and the
-  English gloss on each relation stay bilingual by design — the gloss is the lesson, not chrome.
-- Install rail: shows only on iOS Safari when the app is not already on the home screen; dark
-  strip with share glyph, one line of instruction, 34px dismiss, remembered in `coi.install.dismissed`.
-- Learn (tones + phrases, speech synthesis; Vietnamese tone glosses and notes in VI mode), detail
-  sheet with drag-to-dismiss and localised button labels.
-- PWA: manifest, icons (SVG + 192 PNG for the Apple touch icon), service worker (`coi-v3`),
-  standalone display, safe-area insets, no-zoom input.
-- Distribution: Pages workflow live, **v1.1.0** release published with install steps.
-- Engine checks: **18 parse cases** pass (including Vietnamese queries), 46 entries, 85 paths, no
-  duplicate ids, no path collisions; every map node resolves to a relation and has a path back to
-  you; no node sits outside the canvas.
-- Visual pass in Playwright Chromium at 390×844 (iPhone 13 emulation): Ask EN/VI, map EN/VI, a
-  selected relation with the path lit, the detail sheet, the install rail. 0 console errors,
-  24 map buttons, minimum node hit area 90×44 at the default 75% zoom, 32px language buttons,
-  `scrollWidth === clientWidth`. Screenshots land in `artifacts/` (gitignored).
+- Family map: one 1680×1160 canvas, 24 people, pan + five zoom steps, path lit from you.
+- PWA: manifest, icons, service worker (`coi-v4`), standalone display, safe-area insets.
+- Pages workflow, install rail for iOS Safari, release pages that explain the install path.
+
+**Shipped in 2.0**
+
+- **Swedish, third language.** `Copy` gains a full `SV` object; the header switch is now
+  `EN / VI / SV`, and the account panel lists the three names in full. Language is persisted in
+  `coi.lang`, defaults to the browser language when it is `vi` or `sv`, and sets `<html lang>`.
+- **Named people.** Every relation can carry a name (`Ông Bảy`, `Mẹ Lan`). Names are stored per
+  `kinId`, so a name is a label on a relationship rather than a duplicate record. Typing a saved
+  name in Ask returns that person’s pronoun pair, ranked above text matches; the name also shows
+  on the map node, in the picked card, in the detail sheet, and in the “Your people” list.
+- **Account panel** — a small overlay from the topbar: wordmark, one-line intro, language list,
+  named people with counts and per-row remove, a plain statement that names stay on the device,
+  and the maker’s mark pinned in the footer: `Cội · Version 2.0.0` over
+  `Attributed to Harald Blimark · 2026 · Trademark`.
+- **2.0 surface** (`src/skin.css`, loaded last): quieter chrome, hairline rows instead of cards,
+  larger reading type, a floating inset tab bar, restyled map frame and nodes, dark hero answer,
+  and the account page. The 1.x design system still owns the frame and motion.
+- **Swedish parser** — `min mammas yngre bror`, `min pappas äldre syster`, `mormor`, `farfar`,
+  `min frus mamma`, `min systers man` all resolve. 25 parse cases now, including 7 Swedish.
+- **Answer comes to you.** When a query resolves, the hero card scrolls itself into view — the
+  nearest edge only, with room reserved for the tab bar — so typing on a phone never leaves the
+  answer below the fold or shoves the search field out of sight.
 
 **Known gaps / deliberate omissions**
 
-- No native wrapper (Capacitor/SwiftUI) and no `.ipa` — see §10.
-- The map pans by dragging the scroll container and zooms in five steps; there is no pinch
-  gesture and no inertial “fly to” animation.
-- The family map is a *sample* family, not the user’s own tree. Saved people are a flat list.
-- Parser is English-first; Vietnamese input works for common kinship words through the search
-  index rather than full Vietnamese syntax.
+- No native wrapper (Capacitor/SwiftUI) and no `.ipa` — see §9.
+- Names are one label per relation: you cannot store two people at the same rung (two uncles).
+  `People` is `Record<kinId, name>`, capped at 60 entries, 28 characters each, local only.
+- The map still shows a *sample* family; saved names are labels on that sample, not your own tree.
+- The map pans by dragging and zooms in five steps; no pinch, no inertial fly-to.
+- Swedish parsing covers the kin nouns in `SV_WORDS` (parents, grandparents, siblings, aunts and
+  uncles by side, children, spouse, in-laws, nieces/nephews). `kusin`, `svärson`, `svärdotter`
+  and half/step relations are not modelled.
+- English remains the broadest parser; Vietnamese resolves mostly through the scored index.
 - No half-siblings, step-parents, godparents, or great-uncles/aunts in the model.
-- Only EN and VI interface copy. Adding a third language means adding one object to `COPY` and
-  nothing else.
 - Only the northern standard is asserted; southern variants live in the notes.
 - Audio depends on a vi-VN voice being installed; the Learn screen says so.
 - No lockfile is committed; Pages runs `npm install`, so dependency ranges are the pin.
 - `styles.css` still carries the pre-1.0 `.tree` / `.branch` / `.node` block. It is unused since
-  the map rewrite and is superseded by `family-map.css`; delete it whenever that file is next
-  edited whole.
+  the map rewrite and is superseded by `family-map.css` + `skin.css`.
 
 ---
 
 ## 3. Design system (locked — keep it consistent)
 
 **Direction:** *Soft structuralism*, warm paper instead of white, forest instead of black, lime as
-the single accent. Editorial serif for the Vietnamese words, grotesk for the interface. The app
-should feel like a printed field guide that happens to run at 120fps.
+the single accent. Editorial serif for the Vietnamese words, grotesk for the interface. 2.0 pushes
+it toward an editorial field guide: hairlines, wide margins, one dark object per screen.
 
-**Palette** (`:root` in `src/styles.css`)
+**Palette** (2.0 values live in `:root` of `src/skin.css`, which loads after `styles.css`)
 
 | Token | Value | Use |
 | --- | --- | --- |
-| `--bone` | `#F3F1E7` | app background |
-| `--paper` | `#FBFAF3` | card cores |
-| `--moss` | `#16342A` | primary green, serif body |
-| `--moss-deep` | `#0B1F18` | darkest ink / tab bar |
-| `--sage` | `#7E9884` | labels, secondary text, ngoại dot |
-| `--lime` | `#D9E9A8` | accent, active pill, hero pair values |
-| `--ink` | `#12211A` | text |
-| `--hair` | `rgba(18,33,26,.10)` | hairlines (never 1px gray borders) |
+| `--bone` | `#F1EDDF` | app background |
+| `--paper` | `#FCFAF2` | sheet, account, node cores |
+| `--moss` | `#14352A` | primary green, labels, buttons |
+| `--moss-deep` | `#081B13` | darkest ink / tab bar / hero |
+| `--sage` | `#6F8A76` | labels, secondary text, ngoại dot |
+| `--lime` | `#DDF0A3` | accent, active pill, hero pair values |
+| `--ink` | `#101B15` | text |
+| `--hair` | `rgba(16,27,21,.12)` | hairlines (never 1px gray borders) |
+| `--rust` | `#8A4A36` | destructive only (remove a name) |
 
 **Type**
 
-- `--serif: Lora` — display headings, Vietnamese headwords, numerals in the facts list.
+- `--serif: Lora` — display headings, Vietnamese headwords, names, numerals.
 - `--sans: Be Vietnam Pro` — everything else. Both have true Vietnamese subsets; do not swap for
   a font without one (Inter/Geist do not cover the diacritics properly for this use).
-- Display: `clamp(33px, 8.6vw, 40px)`, `line-height 1.02`, tracking `-0.025em`. Tree uses the
-  tighter `intro--tight` variant (28–34px) so the map reaches the first screen.
-- Micro labels: 7.5–9.5px, uppercase, tracking `.14–.20em`, `--sage` or `--ink-35`.
+- Display: `clamp(37px, 10.8vw, 52px)`, `line-height .96`, tracking `-.035em`, `text-wrap:
+  balance`. The Tree uses `intro--tight` (31–40px) so the map reaches the first screen.
+- Reading copy: lede 14.5px/1.68, glosses 13.5px/1.65, facts 12.8px/1.65. Nothing instructional
+  below 11px.
+- Micro labels: 8–9.5px, uppercase, tracking `.14–.2em`, `--sage` or `--ink-35`.
 
-**Surfaces** — every major card is a *double bezel*: 5px outer shell with a light gradient and a
-hairline ring, inner core with its own radius (`outer − 5px`), inset top highlight, soft ambient
-shadow. Never a flat card on the background.
+**Surfaces** — the shell is paper with a radial wash; the sheet and account panel are `--paper`.
+Cards are quiet: hairline ring plus a soft shadow, radius 14–30px. The only heavy object on the
+Ask screen is the answer itself (dark forest gradient, 30px radius, lime headword).
 
 **Motion** — `--spring: cubic-bezier(.32,.72,0,1)`. Entrance is `.rise` (translate 16px + blur 5px
-→ settle, 820ms) with `rise(i)` stagger from `lib/motion.ts`. Press states are `scale(.965)`,
-nothing instant. Only transform/opacity animate. `prefers-reduced-motion` short-circuits all of it.
+→ settle) with `rise(i)` stagger from `lib/motion.ts`. Press states are `scale(.965–.975)`.
+Only transform/opacity animate. `prefers-reduced-motion` short-circuits it.
 
-**Chrome** — no sticky edge-to-edge nav. Wordmark top-left, tab meta plus the language switch
-at top-right, floating dark tab bar bottom with a lime indicator sliding between three tabs. Content
-scrolls *inside* the app shell; the shell is a 432px frame on desktop, full-bleed under 640px.
+**Chrome** — no sticky edge-to-edge nav. Wordmark top-left, language switch + account button
+at top-right, floating dark tab bar bottom (`left/right: 18px`, 62px, lime indicator). Content
+scrolls *inside* the shell; 432px frame on desktop, full-bleed under 640px.
 
-**Language switch** (`src/shell.css`) — a 3px-padded pill with a hairline ring; two 38×32 buttons,
-the active one forest with lime text. It is chrome: small, quiet, always in the topbar, never a
-settings screen. It persists immediately; there is no apply button.
+**Language switch** (`src/skin.css`, `components/LangSwitch.tsx`) — a 3px-padded pill with a
+hairline ring; 33×28 buttons, the active one forest with lime text. `variant="list"` renders the
+same choice as full-width hairline rows with a check, for the account panel. It is chrome: always
+in the topbar, never a settings screen.
 
 **Family map** (`src/family-map.css`, `src/data/map.ts`)
 
-- A real diagram, not a list: a 1680×1160 dotted canvas with SVG cubic trunks from each couple’s
-  midpoint down to each child, dashed spouse lines, and sibling rows implied by shared parents.
-- Frame is `clamp(380px, 56vh, 500px)`, rounded 24px, radial paper wash, hairline ring; the canvas
-  pans inside it. Five zoom steps (55–105%), default **75%**.
+- A real diagram: 1680×1160 dotted canvas, SVG cubic trunks from each couple’s midpoint, dashed
+  spouse lines, sibling rows implied by shared parents.
+- Frame `clamp(400px, 58vh, 520px)`, radius 26px, radial paper wash, hairline ring.
 - On open and on any zoom change: you are horizontally centred and sit at **66% of the frame
   height**, so your parents’ row is visible above you instead of blank canvas.
-- Each node is a 120×58 button: paper core, hairline ring, serif Vietnamese word over a micro
-  English role. Pressed → lime; on the path → darker ring; off the path → 34% opacity; you →
-  forest bar with a lime word and “the point of view” as its gloss.
-- Path finding is BFS over parents, children, spouses and siblings (`pathTo` in `map.ts`),
-  returning the shortest chain of people. The chain drives both the lit edges and the card text.
-- `bên nội` / `bên ngoại` are pinned pills at the top corners of the frame. They are truthful
-  because the canvas is anchored: left is always nội, right is always ngoại.
-- Zoom bar is a dark pill bottom-right of the frame: −, %, +, recentre. All buttons have labels.
-
-**Install rail** (`src/family-map.css`) — an iOS-only dark strip under the topbar: share glyph in
-a 26px lime-tinted circle, title plus hint, 34px dismiss target. It is chrome, not content, and it
-never appears on desktop or once installed.
+- Each node is a 120×58 button: paper core, serif Vietnamese word over a micro English role.
+  A named node swaps the role for the name (single line, ellipsis) and gets a sage ring.
+- Path finding is BFS over parents, children, spouses and siblings (`pathTo`), returning the
+  shortest chain of people; the chain drives the lit edges and the card under the map.
+- `bên nội` / `bên ngoại` are pinned to the frame corners, not the canvas.
 
 **Hard rules** — no emoji in UI, no icon library, no gradients on text, no `backdrop-blur` on
 scrolling content (only tab bar and sheet scrim).
@@ -179,26 +174,40 @@ type Kin = {
 Why paths: `mẹ → em trai` composes “my mother’s younger brother” without inventing a title for
 every combination. `PATH_INDEX` maps path strings → entry, so lookup is O(1).
 
+### Named people (`src/lib/people.ts`)
+
+```ts
+type People = Record<string, string>   // kinId -> name
+```
+
+- Persisted whole under `coi.people`; read defensively (non-object, non-string values, blanks
+  dropped). `cleanName` collapses whitespace and caps at 28 chars; `withName` refuses a 61st entry.
+- `nameFor(people, id)` is the only read used by components; `namedPeople()` returns the sorted
+  list for the account panel.
+- `findPeople(people, query)` ranks **exact 100 → prefix 80 → contains 60 → all-tokens 40**, with
+  diacritics stripped and query length < 2 ignored. Ask maps those hits to score `2000`, above any
+  text hit, and `Ask.withNames` dedupes by `kin.id` so a name never appears twice.
+- A name is a label, not a new relation: it moves with the `kinId`, survives copy changes, and
+  disappears cleanly with `onName(id, '')`.
+
 ### The map (`src/data/map.ts`)
 
-`MAP_NODES` places a curated sample family on the 1680×1160 canvas; `kinId` points at an entry in
-`KINSHIP` (or `self` for the “Bạn” anchor). `MAP_FAMILIES` drives the blood trunks
-(`parents` → `children`), `MAP_SPOUSES` the dashed marriage lines, and a private `SIBLINGS` list
-adds only the edges needed for path finding. `pathTo(key)` is a BFS returning the shortest chain of
-people from you, inclusive; `kinFor(key)` resolves a node to its relation.
+`MAP_NODES` places the sample family on the canvas; `kinId` points at a `KINSHIP` entry (or
+`self` for the “Bạn” anchor). `MAP_FAMILIES` drives blood trunks, `MAP_SPOUSES` the dashed
+marriages, and a private `SIBLINGS` list adds only the edges needed for path finding.
 
-**Adding a relation** (the most common edit):
+**Adding a relation:**
 
-1. Add the entry to `KINSHIP`, with every path variant (`[father, elderSister]` *and*
-   `[father, youngerSister]` for “dad’s sister”).
-2. Put the strongest search phrasings in `keys`; include the Vietnamese words people might type.
-3. Fill `self`/`them` honestly — usually the reciprocal pair (`chú` ↔ `cháu`), except for children
-   and nephews where the reverse term depends on *your* gender; write both, e.g. `'chú / cô'`, and
-   explain in the note.
-4. If it belongs on the map, add a node in `data/map.ts` with coordinates inside the canvas and
-   then rebuild — the check script fails on a missing id, an unreachable node, or one off-canvas.
-5. If it needs an interface string, add it to both `EN` and `VI` in `lib/i18n.ts` (the `Copy` type
-   makes forgetting one a compile error).
+1. Add the entry to `KINSHIP`, with every path variant.
+2. Put the strongest search phrasings in `keys`; include Vietnamese words people might type.
+3. Fill `self`/`them` honestly — usually the reciprocal pair (`chú` ↔ `cháu`), except where the
+   reverse depends on *your* gender; write both and explain in the note.
+4. If it belongs on the map, add a node inside the canvas; the check script fails on a missing id,
+   an unreachable node, or one off-canvas.
+5. Add interface strings to **all three** objects in `lib/i18n.ts` — the `Copy` type makes a
+   missing language a compile error.
+6. If it is a common Swedish word, add it to `SV_WORDS` (and `SV_CUES` when the word alone marks
+   the query as Swedish) and add a case to `scripts/check-kinship.ts`.
 
 **Editorial policy** — assert the northern standard, note real variance instead of flattening it
 (a father’s older sister: `cô` in most families, `bác gái` in others). No invented terms, no
@@ -208,18 +217,22 @@ people from you, inclusive; `kinFor(key)` resolves a node to its relation.
 
 ## 5. Query parser (`src/lib/parse.ts`)
 
-Pipeline: normalize (strip diacritics, keep apostrophes) → split on possessives → one segment per
-generation step → per-segment options → cartesian product (cap 48).
+Pipeline: normalize (strip diacritics, keep apostrophes) → choose a language path → split into one
+segment per generation step → per-segment options → cartesian product (cap 48).
 
-- Age words set the sibling variant: `older/elder/big/eldest` vs `younger/little/baby`.
-- `grandfather/grandmother` expand to both `nội` and `ngoại` unless `paternal|noi|maternal|ngoai`
-  is present.
+- If the query contains a Swedish cue (`min`, `mamma`, `mormor`, `fru`, `bror`, …), the Swedish
+  pass runs first. If it produces nothing, English still runs — `son` and `man` read as English
+  too, so the cue list only decides precedence, never correctness.
+- Swedish is segmented by nouns rather than possessives: each kin noun is one step, a preceding
+  age adjective (`äldre`, `yngre`, `stora`, `lilla`) picks the sibling variant, and a trailing
+  genitive `s` is stripped **only when the stripped word is itself a noun** (`mammas` → `mamma`,
+  but `barn` stays `barn`). Age state is consumed by the next noun, so `min äldre brors son`
+  resolves to elder brother → son instead of stopping at `son`.
+- English age words: `older/elder/big/eldest` vs `younger/little/baby`.
+- `grandfather/grandmother` expand to both nội and ngoại unless `paternal|noi|maternal|ngoai`.
 - `uncle`, `aunt`, `cousin`, `nephew`, `niece`, `grandson` are **deliberately unparseable** — the
-  parser returns `[]` and the index surfaces every reading. That is the ambiguity UX; do not
-  “fix” it by picking one.
+  index surfaces every reading. That is the ambiguity UX; do not “fix” it by picking one.
 - “younger brother of my mother” is rewritten to “my mother’s younger brother” before splitting.
-- Vietnamese queries (`mẹ của tôi`, `ông nội`, `chị dâu`) generally resolve through the scored
-  index, not the parser. Both paths land in the same `Hit[]`.
 
 `search()` returns `Hit[]` with `exact` (a real path) ranked above scored alias matches. Scores are
 cached per normalized query, field-weighted (identity 60, English 30, gloss 6, note 4) with a
@@ -231,20 +244,24 @@ single phrase bonus, then ordered closest-relation-first among strong matches.
 
 | Screen | File | Notes |
 | --- | --- | --- |
-| Ask | `components/Ask.tsx` | Search + hero answer + recents/saved + 3 facts |
-| Tree | `components/Tree.tsx` | Pan/zoom map (`data/map.ts`), 24 nodes, path card → sheet |
+| Ask | `components/Ask.tsx` | Search + hero answer (auto-scrolled in) + recents/named people + 3 facts |
+| Tree | `components/Tree.tsx` | Pan/zoom map, 24 nodes, named labels, path card → sheet |
 | Learn | `components/Learn.tsx` | 6-tone grid on “ma”, 6 phrases, rule card |
-| Detail | `components/Detail.tsx` | Bottom sheet, drag-to-dismiss, path trail, greeting, save |
-| Shell | `App.tsx`, `components/TabBar.tsx` | Language provider, tab state, recents/saved |
-| Language | `lib/lang.tsx`, `lib/i18n.ts`, `components/LangToggle.tsx` | Context, string tables, EN/VI pill |
+| Detail | `components/Detail.tsx` | Bottom sheet, drag-to-dismiss, path trail, name editor, save |
+| Account | `components/Account.tsx` | Language list, named people, attribution footer |
+| Shell | `App.tsx`, `components/TabBar.tsx` | Language provider, tab state, recents/saved, overlays |
+| Language | `lib/lang.tsx`, `lib/i18n.ts`, `components/LangSwitch.tsx` | Context, three string tables, pill or list |
 | Install | `components/Install.tsx` | iOS-only add-to-home-screen rail, self-hiding |
 
-Navigation is a single `tab` state plus a `detail: Hit | null` overlay. `App` is only the
-`LangProvider` wrapper; `Shell` consumes it. Adding a screen means a tab entry, three strings
-(`tabX` and `metaX` are separate), and a component that renders sections (no page chrome).
+Navigation is a single `tab` state plus `detail: Hit | null` and `account: boolean` overlays.
+`App` is only the `LangProvider` wrapper; `Shell` consumes it. Adding a screen means a tab entry,
+three strings, and a component that renders sections (no page chrome).
 
-Speech: `lib/speech.ts` picks the first `vi` voice, rate `0.82`. Always allow the no-voice
-fallback — buttons disable rather than pretending to speak.
+The account panel is `position: absolute; inset: 0` inside the shell, with a scrolling body and a
+fixed footer — the attribution is always visible without being loud.
+
+Speech: `lib/speech.ts` picks the first `vi` voice, rate `0.82`. Buttons disable rather than
+pretending to speak.
 
 ---
 
@@ -254,11 +271,11 @@ fallback — buttons disable rather than pretending to speak.
 npm run build                      # typecheck + bundle, must be clean
 npm run preview                    # or npm run dev
 
-# engine checks (18 parse cases, ambiguity, dataset + map id/path scans)
+# engine checks: 25 parse cases (incl. 7 Swedish), names, ambiguity, dataset + map scans
 npx esbuild scripts/check-kinship.ts --bundle --platform=node --format=esm \
   --outfile=node_modules/.cache/check-kinship.mjs && node node_modules/.cache/check-kinship.mjs
 
-# map check without a browser: every node becomes a button, the anchor renders
+# map check without a browser: every node becomes a button, saved labels render
 npx esbuild scripts/render-map.tsx --bundle --platform=node --format=esm --jsx=automatic \
   --external:react --external:react-dom --external:react-dom/server \
   --outfile=node_modules/.cache/render-map.mjs && node node_modules/.cache/render-map.mjs
@@ -266,21 +283,20 @@ npx esbuild scripts/render-map.tsx --bundle --platform=node --format=esm --jsx=a
 
 Then at iPhone width (390×844):
 
-1. Type `my mother's younger brother` → **Cậu**, cháu ↔ cậu. Type `mẹ của tôi` → **Mẹ**.
-2. Type `uncle` → four readings (bác, chú, cậu, dượng), not one.
-3. Type `grandfather` → Ông nội above Ông ngoại, both shown.
-4. Open a result → sheet slides, path trail matches, greeting reads naturally. Save it → survives reload.
-5. Tree → map opens on Bố/Mẹ above and your row, `bên nội` left / `bên ngoại` right; press Chú →
-   only the Bạn→Bố→Chú chain stays lit, card shows `chú` / `cháu`, “Open” opens the sheet.
-6. Zoom out to 55% and in to 105% → the frame re-centres on you, nothing clips outside the canvas.
-7. Switch to VI → tab labels (Hỏi/Cây/Học), headings, chips, facts and sheet buttons all change;
-   reload → still VI; `<html lang="vi">`.
-8. Install rail → only on iOS Safari, dismisses and stays dismissed.
-9. 320px width and desktop 1440px — no clipped text, tab bar still floats.
+1. Type `my mother's younger brother` → **Cậu**, cháu ↔ cậu. `mẹ của tôi` → **Mẹ**.
+   `min mammas yngre bror` → **Cậu**. `mormor` → **Bà ngoại**.
+2. `uncle` → four readings, not one. `grandfather` → Ông nội above Ông ngoại.
+3. Open a relative → **Their name** → save `Ông Bảy`. Search `ông bảy` → that relation answers with
+   the name on the hero and in “Your people”. Reload → still there. Account → remove → gone.
+4. Resolved answers must start above the tab bar without scrolling (the auto-scroll).
+5. Tree → press Chú → only the Bạn→Bố→Chú chain stays lit, card shows `chú` / `cháu`.
+6. Switch to SV → `Fråga / Träd / Lär`, headings, chips, facts, sheet buttons all Swedish;
+   reload → still SV; `<html lang="sv">`. Account lists English / Tiếng Việt / Svenska.
+7. Account footer reads `Attributed to Harald Blimark · 2026 · Trademark` at 9px, never clipped.
+8. 320px and desktop 1440px — no clipped text, tab bar still floats, no horizontal scroll.
 
-Deployment check: a green Pages Actions run plus a 200 at the Pages URL. The 1.1 visual pass was
-done headlessly with Playwright Chromium at 390×844; §11 records how to bring that browser up in a
-fresh workspace.
+Deployment check: a green Pages Actions run plus a 200 at the Pages URL. The 2.0 visual pass was
+done headlessly with Playwright Chromium at 390×844; §11 records how to bring the browser up.
 
 ---
 
@@ -288,10 +304,13 @@ fresh workspace.
 
 - No comments unless they explain *why*. No `any`. No unused exports (`noUnusedLocals` is on).
 - Components are named exports except `App`; props typed inline above the component.
-- CSS is the design-system file plus `family-map.css` (map + install rail) and `shell.css` (language
-  switch); add classes near their section, use tokens only.
-- Every user-facing string goes through `useLang().t`; never hard-code copy in a component.
-- Anything user-generated or id-based goes through `lib/storage.ts` (fails silently in private mode).
+- CSS layers, in load order: `styles.css` (frame + motion), `family-map.css` (map, install rail),
+  `shell.css` (1.1 language switch), `skin.css` (**2.0 surface — new visual work goes here**, not
+  into the older layers).
+- Every user-facing string goes through `useLang().t`; never hard-code copy in a component. The
+  only deliberate exceptions are Vietnamese headwords and the attribution line.
+- Anything user-generated or id-based goes through `lib/storage.ts` / `lib/people.ts` (both fail
+  silently in private mode).
 - Keep dataset and map in sync: `map.ts` may only reference ids that exist in `kinship.ts`, and
   every node must be reachable from you (the check script enforces both).
 
@@ -302,26 +321,26 @@ fresh workspace.
   **https://kaweaki.github.io/coi/**. Vite uses `base: './'`, so the build also works at a domain
   root or any subfolder.
 - **Install** — Safari → Share → Add to Home Screen. That is the only install path iOS permits
-  without a signed bundle; the in-app rail exists to teach it. Detect iOS Safari + not-standalone
-  with `navigator.standalone` and `display-mode`; hide in Chrome/Firefox on iOS, which cannot install.
-- **Release** — `v1.1.0`, target `main`; the notes repeat the install steps, the live link, and
-  what changed in 1.1. GitHub Releases cannot attach a working installer through this toolchain,
-  so the release page is the install guide rather than a download.
+  without a signed bundle; the in-app rail teaches it. Detect iOS Safari + not-standalone with
+  `navigator.standalone` and `display-mode`; hide in Chrome/Firefox on iOS, which cannot install.
+- **Release** — `v2.0.0`, target `main`; notes cover Swedish, named people, the account panel and
+  the reskin, and repeat the install steps. GitHub Releases cannot attach a working installer
+  through this toolchain, so the release page is the install guide, not a download.
 - **Never** claim an `.ipa`: unsigned bundles do not install on iOS, and signing requires macOS,
   Xcode and an Apple identity. A Capacitor shell is the only route there (§10).
 
 ## 10. Roadmap (agreed direction, not started)
 
-1. **My people** — name real relatives, store the path, and build a personal tree from them.
-2. **Pinch + inertia** on the map, and a “fit the whole family” zoom step for the first open.
-3. **Native shell** — Capacitor wrap for a real `.ipa` (signing via Xcode or AltStore/SideStore),
-   reusing this exact UI. Only worth it if home-screen PWA limits start to bite.
-4. **Deeper kinship** — great-uncles, step and half relations, the `ông bác / ông chú` layer.
-5. **Southern mode** — swap `bố/mẹ` for `ba/má` and adjust notes; the language switch is the
-   natural place for it.
-6. **Practice** — recall drills on the pronouns you saved; spaced repetition on ~46 words is
-   cheap and useful.
-7. **Share** — send a relation card as an image (aunties will love this).
+1. **Personal tree** — named people become real nodes, not labels on the sample family.
+2. **Several people per relation** — replace `Record<kinId, name>` with a list of saved people,
+   so two uncles can both be stored and told apart.
+3. **Pinch + inertia** on the map, and a “fit the whole family” first-open step.
+4. **Native shell** — Capacitor wrap for a real `.ipa` (signing via Xcode or AltStore/SideStore),
+   reusing this exact UI.
+5. **Deeper kinship** — great-uncles, step and half relations, the `ông bác / ông chú` layer.
+6. **Southern mode** — swap `bố/mẹ` for `ba/má` and adjust notes.
+7. **Practice** — recall drills on saved people; spaced repetition on ~46 words is cheap.
+8. **Share** — send a relation card as an image.
 
 ## 11. Headless browser and preview
 
@@ -342,13 +361,15 @@ npm install --prefix /tmp/pw playwright@1.64.1
 /tmp/pw/node_modules/.bin/playwright install chromium
 ```
 
-Serve the build on its own port with `node_modules/.bin/vite preview --port 4174 --host 127.0.0.1`,
-then run a screenshot script from `/tmp/pw` (so bare `playwright` resolves) with `OUT` pointing at
-`artifacts/`. `artifacts/shots11.mjs` takes the 1.1 set: Ask EN/VI, map EN/VI, a selected relation,
-the sheet, and reports node size, language-button size, overflow and console errors.
+Serve the build on its own port with `node_modules/.bin/vite preview --port 4179 --host 127.0.0.1`,
+then run a script from `/tmp/pw` (so bare `playwright` resolves) with `OUT` set to `artifacts/`.
+`artifacts/shots20.mjs` (gitignored, like all artifacts) takes the 2.0 set — Ask EN/SV, the name
+search, a Swedish answer, both map states, the sheet with a saved name, and the account panel —
+then prints node sizes, language-button heights, overflow, `<html lang>`, the saved-name count,
+the attribution text and console errors. Copy it into `/tmp/pw` before every run; editing it in
+`artifacts/` alone changes nothing.
 
-Two traps: kill the preview by its recorded PID (a `pkill -f "vite preview"` matches the command
-line of the shell running it, and kills your own session), and note that neither the libraries nor
-the browser survive an archive — rerun the recipe before the next visual pass. Web fonts load from
-Google, so screenshots render properly even though the image has no system fonts (fontconfig will
-complain — harmless).
+Two traps: kill the preview by its recorded PID (`pkill -f "vite preview"` matches the shell
+running it and kills your session), and note that neither the libraries nor the browser survive an
+archive — rerun the recipe before the next visual pass. Web fonts load from Google, so screenshots
+render properly even though the image has no system fonts (fontconfig complains — harmless).

@@ -23,8 +23,14 @@ person and your own word is already decided: **chú** means you are **cháu**; *
 - **Tree** — one large map of a sample family: 24 people across four generations, nội on the
   left and ngoại on the right, you at the centre of your own row. Drag to move, zoom with ±, and
   press anyone: every line from you to them lights up and the pair appears, both directions.
-- **Two languages** — an EN / VI switch in the header retranslates the whole interface and
-  remembers the choice. The Vietnamese headwords stay Vietnamese, as they should.
+- **Three languages** — an EN / VI / SV switch retranslates the whole interface and remembers
+  the choice. Swedish input works too (`min mammas yngre bror`). The Vietnamese headwords stay
+  Vietnamese, as they should.
+- **Your people** — give a relative their real name (`Ông Bảy`, `Mẹ Lan`) on the detail sheet. The
+  name then appears on the map, in the answer, and in search: type `ông bảy` and Cội answers with
+  the pronoun pair you use, not with a generic rule. Names stay on the device.
+- **Account** — a small panel behind the top-right button: language, every named person with a
+  remove control, and the attribution.
 - **Learn** — the six tones on a single syllable, plus the greetings that use these pronouns.
 - **Offline** — installed as a PWA, it opens without a network and keeps your recents and saved
   people on the device.
@@ -40,7 +46,7 @@ person and your own word is already decided: **chú** means you are **cháu**; *
 It then opens full-screen with its own icon and a dark green status bar. On the first visit the app
 shows the same three steps in a rail above the content, then remembers being dismissed.
 
-The [v1.1.0 release](https://github.com/Kaweaki/coi/releases/tag/v1.1.0) repeats this for anyone
+The [v2.0.0 release](https://github.com/Kaweaki/coi/releases/tag/v2.0.0) repeats this for anyone
 arriving from the repository.
 
 ### Why there is no `.ipa`
@@ -87,6 +93,10 @@ so a path can be resolved in one lookup. `src/lib/parse.ts` turns free text into
 `src/lib/search.ts` matches those against the dataset and falls back to a scored alias search
 when a phrase is too ambiguous to parse (“uncle”, “cousin”).
 
+Names you save are stored as `kinId -> name`, so a name is a label on a relationship rather than a
+second copy of it. `src/lib/people.ts` normalises them (diacritics ignored, so `bjorn` finds
+`Björn`) and ranks exact, prefix and partial matches; Ask puts a name hit above any text hit.
+
 Words are the northern standard, with southern and regional variants noted on each entry. Family
 usage varies — where it does (a father’s older sister, for instance, is `cô` in most families and
 `bác gái` in others) the note says so rather than pretending there is one right answer.
@@ -98,16 +108,18 @@ src/
   data/kinship.ts   46 relations, their paths, tones, notes
   data/map.ts       the family map: nodes, trunk lines, couples, path finder
   data/phrases.ts   tones and greeting phrases
-  lib/parse.ts      English/Vietnamese phrase -> kin path
+  lib/parse.ts      English/Vietnamese/Swedish phrase -> kin path
   lib/search.ts     path lookup + fuzzy alias scoring
-  lib/i18n.ts       every interface string, English and Vietnamese
+  lib/i18n.ts       every interface string, in English, Vietnamese and Swedish
   lib/lang.tsx      language context, persisted to localStorage
+  lib/people.ts     names you give your relatives + name search
   lib/speech.ts     vi-VN speech synthesis
   lib/storage.ts    recents and saved people (localStorage)
-  components/       Ask, Tree, Learn, Detail sheet, TabBar, LangToggle, Install rail, Icons
-  styles.css        the design system
+  components/       Ask, Tree, Learn, Detail sheet, Account, TabBar, LangSwitch, Install, Icons
+  styles.css        the design system (frame + motion)
   family-map.css    the family map + install rail (loaded after styles.css)
   shell.css         shell chrome: the language switch
+  skin.css          the 2.0 surface (loaded last)
 public/             manifest, service worker, icons
 scripts/            icon generator (Pillow), kinship + map checks
 .github/workflows/  Pages build + deploy
