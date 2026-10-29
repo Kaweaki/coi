@@ -5,6 +5,7 @@
  *     --outfile=/tmp/check-kinship.mjs && node /tmp/check-kinship.mjs
  */
 import { KINSHIP, PATH_INDEX } from '../src/data/kinship'
+import { GENERATIONS } from '../src/data/tree'
 import { search } from '../src/lib/search'
 
 const cases: [string, string][] = [
@@ -55,5 +56,21 @@ for (const kin of KINSHIP) {
   }
 }
 console.log(`entries: ${KINSHIP.length} · unique paths: ${seenPaths.size} · indexed: ${PATH_INDEX.size}`)
+
+console.log('\nfamily map')
+let mapNodes = 0
+for (const generation of GENERATIONS) {
+  for (const wing of generation.wings) {
+    for (const node of wing.nodes) {
+      if (node.self) continue
+      mapNodes += 1
+      if (!KINSHIP.some((kin) => kin.id === node.kinId)) {
+        throw new Error(`tree node points at a missing relation: ${generation.key}/${node.vi} -> ${node.kinId}`)
+      }
+    }
+  }
+}
+console.log(`generations: ${GENERATIONS.length} · pressable nodes: ${mapNodes} · every id resolves`)
+
 console.log(failures ? `\n${failures} FAILURES` : '\nall parse cases pass')
 process.exit(failures ? 1 : 0)
