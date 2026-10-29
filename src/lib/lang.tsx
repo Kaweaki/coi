@@ -16,13 +16,16 @@ export const useLang = () => useContext(LangContext)
 function initialLang(): Lang {
   try {
     const stored = localStorage.getItem(STORE)
-    if (stored === 'vi' || stored === 'en') return stored
+    if (stored === 'vi' || stored === 'en' || stored === 'sv') return stored
   } catch {
     /* storage blocked */
   }
-  return typeof navigator !== 'undefined' && navigator.language.toLowerCase().startsWith('vi')
-    ? 'vi'
-    : 'en'
+  if (typeof navigator !== 'undefined') {
+    const language = navigator.language.toLowerCase()
+    if (language.startsWith('vi')) return 'vi'
+    if (language.startsWith('sv')) return 'sv'
+  }
+  return 'en'
 }
 
 export function LangProvider({ children }: { children: ReactNode }) {

@@ -1,7 +1,7 @@
 {
   "name": "coi",
   "private": true,
-  "version": "1.1.0",
+  "version": "2.0.0",
   "type": "module",
   "description": "Cội — a Vietnamese kinship pronoun app you can install on your iPhone.",
   "scripts": {

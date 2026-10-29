@@ -1,7 +1,7 @@
 /* Cội — offline shell.
    Cache-first for build assets, network-first for navigations so a new
    deploy is picked up on the next launch while flights still work. */
-const CACHE = 'coi-v3'
+const CACHE = 'coi-v4'
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg']
 
 self.addEventListener('install', (event) => {

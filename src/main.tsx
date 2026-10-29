@@ -4,6 +4,7 @@ import App from './App'
 import './styles.css'
 import './family-map.css'
 import './shell.css'
+import './skin.css'
 
 const root = document.getElementById('root')
 if (!root) throw new Error('Missing #root')
