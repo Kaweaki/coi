@@ -2,10 +2,10 @@
  * Kinship engine checks — no test framework needed.
  *
  *   npx esbuild scripts/check-kinship.ts --bundle --platform=node --format=esm \
- *     --outfile=/tmp/check-kinship.mjs && node /tmp/check-kinship.mjs
+ *     --outfile=node_modules/.cache/check-kinship.mjs && node node_modules/.cache/check-kinship.mjs
  */
 import { KINSHIP, PATH_INDEX } from '../src/data/kinship'
-import { GENERATIONS } from '../src/data/tree'
+import { MAP_H, MAP_NODES, MAP_W, kinFor, pathTo } from '../src/data/map'
 import { search } from '../src/lib/search'
 
 const cases: [string, string][] = [
@@ -23,6 +23,10 @@ const cases: [string, string][] = [
   ["my daughter's husband", 'Con rể'],
   ["my son's son", 'Cháu trai'],
   ["husband's father", 'Bố chồng'],
+  ['mẹ của tôi', 'Mẹ'],
+  ['ông nội', 'Ông nội'],
+  ['cậu', 'Cậu'],
+  ['chị dâu', 'Chị dâu'],
 ]
 
 let failures = 0
@@ -58,19 +62,26 @@ for (const kin of KINSHIP) {
 console.log(`entries: ${KINSHIP.length} · unique paths: ${seenPaths.size} · indexed: ${PATH_INDEX.size}`)
 
 console.log('\nfamily map')
-let mapNodes = 0
-for (const generation of GENERATIONS) {
-  for (const wing of generation.wings) {
-    for (const node of wing.nodes) {
-      if (node.self) continue
-      mapNodes += 1
-      if (!KINSHIP.some((kin) => kin.id === node.kinId)) {
-        throw new Error(`tree node points at a missing relation: ${generation.key}/${node.vi} -> ${node.kinId}`)
-      }
-    }
-  }
+const unlinked = MAP_NODES.filter((node) => !node.self && !kinFor(node.key))
+if (unlinked.length) {
+  throw new Error(
+    `map nodes point at missing relations: ${unlinked.map((node) => `${node.key} -> ${node.kinId}`).join(', ')}`,
+  )
 }
-console.log(`generations: ${GENERATIONS.length} · pressable nodes: ${mapNodes} · every id resolves`)
+const unreachable = MAP_NODES.filter((node) => node.key !== 'you' && pathTo(node.key).length === 0)
+if (unreachable.length) {
+  throw new Error(`map nodes have no path from you: ${unreachable.map((node) => node.key).join(', ')}`)
+}
+const offCanvas = MAP_NODES.filter(
+  (node) => node.x < 70 || node.x > MAP_W - 70 || node.y < 50 || node.y > MAP_H - 50,
+)
+if (offCanvas.length) {
+  throw new Error(`map nodes fall outside the canvas: ${offCanvas.map((node) => node.key).join(', ')}`)
+}
+const pressable = MAP_NODES.filter((node) => !node.self).length
+console.log(
+  `map nodes: ${MAP_NODES.length} · pressable: ${pressable} · ${MAP_W}×${MAP_H} · every id resolves and every node reaches you`,
+)
 
 console.log(failures ? `\n${failures} FAILURES` : '\nall parse cases pass')
 process.exit(failures ? 1 : 0)

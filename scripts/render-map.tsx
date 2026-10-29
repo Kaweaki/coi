@@ -7,21 +7,17 @@
  */
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Tree } from '../src/components/Tree'
-import { GENERATIONS } from '../src/data/tree'
-
-const nodes = GENERATIONS.flatMap((generation) =>
-  generation.wings.flatMap((wing) => wing.nodes),
-)
-const expected = nodes.filter((node) => !node.self).length
+import { MAP_NODES, kinFor } from '../src/data/map'
 
 const html = renderToStaticMarkup(<Tree onOpen={() => undefined} />)
-const buttons = (html.match(/<button/g) ?? []).length
-const anchor = html.includes('class="you"')
-const missing = nodes.map((node) => node.vi).filter((word) => !html.includes(word))
+const nodes = (html.match(/class="node2[ "]/g) ?? []).length
+const anchor = html.includes('node2--self')
+const names = MAP_NODES.map((node) => (node.self ? 'Bạn' : (kinFor(node.key)?.vi ?? '')))
+const missing = names.filter((name) => name && !html.includes(name))
 
-console.log(`buttons: ${buttons}/${expected} · you anchor: ${anchor} · missing names: ${missing.length}`)
+console.log(`map nodes: ${nodes}/${MAP_NODES.length} · bạn anchor: ${anchor} · missing names: ${missing.length}`)
 
-if (buttons !== expected || !anchor || missing.length) {
+if (nodes !== MAP_NODES.length || !anchor || missing.length) {
   if (missing.length) console.log(missing.join(', '))
   process.exit(1)
 }
