@@ -1,4 +1,4 @@
-"""Draw Cội's PNG icons (512 / apple-touch 180) with Pillow.
+"""Draw Cội's PNG icon (192, also used as the Apple touch icon) with Pillow.
 
 Same geometry as public/icon.svg: a four-node kinship glyph, lime on a
 flat forest tile — flat colour so the PNG stays tiny and the icon reads
@@ -29,7 +29,7 @@ DROPS = [[(318, 544), (318, 564)], [(512, 544), (512, 564)], [(706, 544), (706, 
 STROKE = 26
 
 
-def draw_icon(size: int) -> Image.Image:
+def draw_icon(size: int = 192) -> Image.Image:
     big = Image.new("RGBA", (SIZE * SCALE, SIZE * SCALE), DEEP)
     draw = ImageDraw.Draw(big)
 
@@ -64,9 +64,8 @@ def draw_icon(size: int) -> Image.Image:
 
 
 def main() -> None:
-    for name, size in (("icon-512.png", 512), ("apple-touch-icon.png", 180)):
-        draw_icon(size).save(PUBLIC / name, optimize=True)
-        print("wrote", PUBLIC / name)
+    draw_icon().save(PUBLIC / "icon-192.png", optimize=True)
+    print("wrote", PUBLIC / "icon-192.png")
 
 
 if __name__ == "__main__":
